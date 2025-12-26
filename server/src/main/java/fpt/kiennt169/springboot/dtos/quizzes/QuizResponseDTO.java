@@ -1,7 +1,6 @@
 package fpt.kiennt169.springboot.dtos.quizzes;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Schema(description = "Quiz basic information response (without questions)")

@@ -98,11 +98,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
-        if (requestDTO.email() != null && !user.getEmail().equals(requestDTO.email())) {
-            if (userRepository.existsByEmail(requestDTO.email())) {
+        if (requestDTO.email() != null && !user.getEmail().equals(requestDTO.email()) && userRepository.existsByEmail(requestDTO.email())) {
                 throw new EmailAlreadyExistsException(requestDTO.email());
             }
-        }
+        
         
         userMapper.updateEntityFromDTO(requestDTO, user);
         
