@@ -1,0 +1,150 @@
+# ============================================
+# MONOREPO GITIGNORE - Quiz App
+# ============================================
+
+# ============================================
+# Backend (Spring Boot) - server/
+# ============================================
+
+# Gradle
+server/.gradle/
+server/build/
+server/!gradle/wrapper/gradle-wrapper.jar
+server/!**/src/main/**/build/
+server/!**/src/test/**/build/
+
+# Maven (nếu có)
+server/target/
+server/!**/src/main/**/target/
+server/!**/src/test/**/target/
+
+# Spring Boot
+server/HELP.md
+server/.apt_generated
+server/.classpath
+server/.factorypath
+server/.project
+server/.settings
+server/.springBeans
+server/.sts4-cache
+server/bin/
+server/!**/src/main/**/bin/
+server/!**/src/test/**/bin/
+
+# Logs
+server/logs/
+server/*.log
+
+# ============================================
+# Frontend (React/Vite) - client/
+# ============================================
+
+# Dependencies
+client/node_modules/
+client/.pnp
+client/.pnp.js
+
+# Build output
+client/dist/
+client/dist-ssr/
+client/build/
+
+# Logs
+client/logs
+client/*.log
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/pnpm-debug.log*
+client/lerna-debug.log*
+
+# Local files
+client/*.local
+
+# ============================================
+# IDE & Editor
+# ============================================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+server/out/
+server/!**/src/main/**/out/
+server/!**/src/test/**/out/
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Other editors
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ============================================
+# OS Files
+# ============================================
+
+.DS_Store
+Thumbs.db
+
+# ============================================
+# Environment & Secrets
+# ============================================
+
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+server/.env
+client/.env
+
+# ============================================
+# Docker
+# ============================================
+
+# Ignore docker volumes (if any)
+docker-volumes/
+
+# ============================================
+# Other
+# ============================================
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output
+
+# Logs
+logs/
+*.log
