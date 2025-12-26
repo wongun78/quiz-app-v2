@@ -2,7 +2,6 @@ package fpt.kiennt169.springboot.dtos.users;
 
 import fpt.kiennt169.springboot.enums.RoleEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,11 +20,5 @@ public record UserResponseDTO(
     Boolean active,
     
     @Schema(description = "Set of roles assigned to this user")
-    Set<RoleEnum> roles,
-    
-    @Schema(description = "User creation timestamp", example = "2025-12-26T10:30:00")
-    LocalDateTime createdAt,
-    
-    @Schema(description = "Last update timestamp", example = "2025-12-26T15:45:00")
-    LocalDateTime updatedAt
+    Set<RoleEnum> roles
 ) {}

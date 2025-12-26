@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-Application<server>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "fpt.kiennt169.springboot.Application",
+      "projectName": "server",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

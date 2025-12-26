@@ -23,11 +23,5 @@ public record QuizResponseDTO(
     Boolean active,
     
     @Schema(description = "Total number of questions in this quiz", example = "10")
-    Integer totalQuestions,
-    
-    @Schema(description = "Quiz creation timestamp", example = "2025-12-26T10:30:00")
-    LocalDateTime createdAt,
-    
-    @Schema(description = "Last update timestamp", example = "2025-12-26T15:45:00")
-    LocalDateTime updatedAt
+    Integer totalQuestions
 ) {}

@@ -60,7 +60,6 @@ public class AuthServiceImpl implements AuthService {
             String token = tokenService.generateToken(user, roleNames);
             String refreshToken = tokenService.generateRefreshToken(user);
             
-            // Save refresh token to database
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
 
@@ -111,7 +110,6 @@ public class AuthServiceImpl implements AuthService {
         String token = tokenService.generateToken(savedUser, roleNames);
         String refreshToken = tokenService.generateRefreshToken(savedUser);
         
-        // Save refresh token to database
         savedUser.setRefreshToken(refreshToken);
         userRepository.save(savedUser);
 
@@ -128,22 +126,18 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDTO refresh(String refreshToken) {
         log.debug("Attempting to refresh token");
         
-        // Validate refresh token format and expiration
         if (!tokenService.validateRefreshToken(refreshToken)) {
             throw new BadCredentialsException("Invalid or expired refresh token");
         }
         
-        // Extract email from refresh token
         String email = tokenService.getEmailFromRefreshToken(refreshToken);
         if (email == null) {
             throw new BadCredentialsException("Cannot extract email from refresh token");
         }
         
-        // Validate refresh token exists in database
         User user = userRepository.findByRefreshTokenAndEmail(refreshToken, email)
                 .orElseThrow(() -> new BadCredentialsException("Refresh token not found or does not match"));
         
-        // Generate new tokens
         Set<String> roleNames = user.getRoles().stream()
                 .map(role -> role.getName().name())
                 .collect(Collectors.toSet());
@@ -151,7 +145,6 @@ public class AuthServiceImpl implements AuthService {
         String newAccessToken = tokenService.generateToken(user, roleNames);
         String newRefreshToken = tokenService.generateRefreshToken(user);
         
-        // Update refresh token in database (token rotation)
         user.setRefreshToken(newRefreshToken);
         userRepository.save(user);
         
@@ -170,13 +163,11 @@ public class AuthServiceImpl implements AuthService {
     public void logout() {
         log.debug("Attempting logout");
         
-        // Get current user email from security context
         String email = org.springframework.security.core.context.SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getName();
         
-        // Find user and remove refresh token
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
         

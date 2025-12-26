@@ -11,8 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "answers", indexes = {
     @Index(name = "idx_answer_question_id", columnList = "question_id"),
-    @Index(name = "idx_answer_is_correct", columnList = "is_correct"),
-    @Index(name = "idx_answer_question_correct", columnList = "question_id, is_correct")
+    @Index(name = "idx_answer_is_correct", columnList = "is_correct")
 })
 public class Answer extends BaseEntity {
     
