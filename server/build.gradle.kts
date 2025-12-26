@@ -40,7 +40,7 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
-	// Springdoc OpenAPI (Swagger UI) - v3.0.0 for Spring Boot 4.0 / Spring Framework 7.0
+	// Springdoc OpenAPI (Swagger UI)
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
 
 	// Dotenv for environment variables
