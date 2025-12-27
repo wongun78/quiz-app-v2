@@ -20,12 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class QuestionServiceImpl implements QuestionService {
+    
+    private static final String ENTITY_NAME = "Question";
     
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
@@ -73,7 +74,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional(readOnly = true)
     public QuestionResponseDTO getById(UUID id) {
         Question question = questionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException(ENTITY_NAME, "id", id));
         
         return questionMapper.toResponseDTO(question);
     }
@@ -82,7 +83,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public QuestionResponseDTO update(UUID id, QuestionRequestDTO requestDTO) {
         Question question = questionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException(ENTITY_NAME, "id", id));
         
         questionMapper.updateEntityFromDTO(requestDTO, question);
         
@@ -95,7 +96,7 @@ public class QuestionServiceImpl implements QuestionService {
                     answer.setQuestion(question);
                     return answer;
                 })
-                .collect(Collectors.toList());
+                .toList();
         
         question.setAnswers(newAnswers);
         
@@ -107,7 +108,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public void delete(UUID id) {
         Question question = questionRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
+            .orElseThrow(() -> new ResourceNotFoundException(ENTITY_NAME, "id", id));
         
         question.setIsDeleted(true);
         

@@ -69,7 +69,7 @@ public class ExamServiceImpl implements ExamService {
             List<UUID> correctAnswerIds = question.getAnswers().stream()
                     .filter(Answer::getIsCorrect)
                     .map(Answer::getId)
-                    .collect(Collectors.toList());
+                    .toList();
             
             boolean isCorrect = checkAnswer(question, submittedAnswerIds, correctAnswerIds);
             

@@ -5,8 +5,6 @@ import fpt.kiennt169.springboot.dtos.questions.QuestionResponseDTO;
 import fpt.kiennt169.springboot.entities.Question;
 import fpt.kiennt169.springboot.entities.Quiz;
 
-import java.util.stream.Collectors;
-
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", uses = {AnswerMapper.class})
@@ -24,6 +22,10 @@ public interface QuestionMapper {
     Question toEntity(QuestionRequestDTO requestDTO);
 
     @Mapping(target = "quizzes", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "isDeleted", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDTO(QuestionRequestDTO requestDTO, @MappingTarget Question question);
 
@@ -34,6 +36,6 @@ public interface QuestionMapper {
         return quizzes.stream()
             .distinct()
             .map(quiz -> new QuestionResponseDTO.QuizInfoDTO(quiz.getId(), quiz.getTitle()))
-            .collect(Collectors.toList());
+            .toList();
     }
 }
