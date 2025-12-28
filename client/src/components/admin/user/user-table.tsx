@@ -183,9 +183,7 @@ const UserTable = ({ users }: UserTableProps) => {
                 3
               </PaginationLink>
             </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
+
             <PaginationItem>
               <Button
                 variant="outline"

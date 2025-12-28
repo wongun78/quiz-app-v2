@@ -168,9 +168,7 @@ const QuestionTable = ({ questions }: QuestionTableProps) => {
                 3
               </PaginationLink>
             </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
+
             <PaginationItem>
               <Button
                 variant="outline"
