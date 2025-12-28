@@ -54,7 +54,7 @@ const Navbar = () => {
 
           {isAuthenticated && (
             <NavLink
-              to="/admin"
+              to="/admin/quizzes"
               className={({ isActive }) =>
                 `text-sm font-medium transition-colors cursor-pointer ${
                   isActive
