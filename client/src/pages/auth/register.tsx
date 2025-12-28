@@ -8,10 +8,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import bg from "@/assets/images/bg.png";
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-primary justify-center">
+    <div
+      className="flex min-h-screen flex-col bg-primary justify-center"
+      style={{
+        backgroundImage: `url(${bg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <div className="mx-auto w-full max-w-md">
         <CardLogin>
           <CardHeader>

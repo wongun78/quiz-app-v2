@@ -6,10 +6,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import bg from "@/assets/images/bg.png";
 
 export default function ForbiddenPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-primary justify-center px-6 py-12">
+    <div
+      className="flex min-h-screen flex-col bg-primary justify-center px-6 py-12"
+      style={{
+        backgroundImage: `url(${bg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <div className="md:mx-auto md:w-full md:max-w-md">
         <CardLogin>
           <CardHeader>
