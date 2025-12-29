@@ -1,9 +1,6 @@
 version: "3.8"
 
 services:
-  # ==========================================
-  # PostgreSQL Database
-  # ==========================================
   postgres:
     image: postgres:16-alpine
     container_name: quiz-postgres
@@ -25,9 +22,6 @@ services:
     networks:
       - quiz-network
 
-  # ==========================================
-  # Spring Boot Backend Application
-  # ==========================================
   backend:
     build:
       context: ./server
@@ -64,25 +58,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-
-  # ==========================================
-  # React Frontend Application (Optional)
-  # ==========================================
-  # Uncomment nếu bạn muốn chạy frontend trong Docker
-  # frontend:
-  #   build:
-  #     context: ./client
-  #     dockerfile: Dockerfile
-  #   container_name: quiz-frontend
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - backend
-  #   environment:
-  #     VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - quiz-network
 
 volumes:
   postgres_data:

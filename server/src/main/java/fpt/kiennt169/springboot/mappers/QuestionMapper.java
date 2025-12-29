@@ -39,7 +39,6 @@ public interface QuestionMapper {
                 .map(quiz -> new QuestionResponseDTO.QuizInfoDTO(quiz.getId(), quiz.getTitle()))
                 .toList();
         } catch (Exception e) {
-            // If lazy loading fails, return empty list
             return java.util.Collections.emptyList();
         }
     }

@@ -6,7 +6,6 @@ import fpt.kiennt169.springboot.dtos.quizzes.QuizRequestDTO;
 import fpt.kiennt169.springboot.dtos.quizzes.QuizResponseDTO;
 import fpt.kiennt169.springboot.entities.Question;
 import fpt.kiennt169.springboot.entities.Quiz;
-import fpt.kiennt169.springboot.exceptions.QuestionNotBelongToQuizException;
 import fpt.kiennt169.springboot.exceptions.ResourceNotFoundException;
 import fpt.kiennt169.springboot.mappers.QuizMapper;
 import fpt.kiennt169.springboot.repositories.QuestionRepository;
@@ -119,10 +118,6 @@ public class QuizServiceImpl implements QuizService {
         
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
-        
-        if (!quiz.getQuestions().contains(question)) {
-            throw new QuestionNotBelongToQuizException();
-        }
         
         quiz.getQuestions().remove(question);
         quizRepository.save(quiz);

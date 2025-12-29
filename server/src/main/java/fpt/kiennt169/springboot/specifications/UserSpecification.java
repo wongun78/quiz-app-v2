@@ -4,8 +4,6 @@ import fpt.kiennt169.springboot.entities.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
-import java.util.UUID;
-
 public class UserSpecification {
 
     private UserSpecification() {}
@@ -26,21 +24,5 @@ public class UserSpecification {
 
     public static Specification<User> isActive(Boolean active) {
         return (root, query, cb) -> active == null ? null : cb.equal(root.get("active"), active);
-    }
-
-    public static Specification<User> hasRole(UUID roleId) {
-        return (root, query, cb) -> {
-            if (roleId == null) return null;
-            query.distinct(true);
-            return cb.equal(root.join("roles").get("id"), roleId);
-        };
-    }
-
-    public static Specification<User> isActiveOnly() {
-        return isActive(true);
-    }
-
-    public static Specification<User> isInactiveOnly() {
-        return isActive(false);
     }
 }

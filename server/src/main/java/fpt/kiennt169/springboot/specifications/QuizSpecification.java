@@ -19,11 +19,4 @@ public class QuizSpecification {
         return (root, query, cb) -> active == null ? null : cb.equal(root.get("active"), active);
     }
 
-    public static Specification<Quiz> isActiveOnly() {
-        return isActive(true);
-    }
-
-    public static Specification<Quiz> isInactiveOnly() {
-        return isActive(false);
-    }
 }
