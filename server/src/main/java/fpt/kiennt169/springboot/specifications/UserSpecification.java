@@ -15,13 +15,6 @@ public class UserSpecification {
         };
     }
 
-    public static Specification<User> hasEmail(String email) {
-        return (root, query, cb) -> {
-            if (!StringUtils.hasText(email)) return null;
-            return cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%");
-        };
-    }
-
     public static Specification<User> isActive(Boolean active) {
         return (root, query, cb) -> active == null ? null : cb.equal(root.get("active"), active);
     }
