@@ -12,7 +12,7 @@ public record LoginRequestDTO(
     @Email(message = "{validation.email.invalid}")
     String email,
     
-    @Schema(description = "User password", example = "admin123", minLength = 8)
+    @Schema(description = "User password (Admin: Admin@123, User: User@123)", example = "Admin@123", minLength = 8)
     @NotBlank(message = "{validation.password.notblank}")
     String password
 ) {}

@@ -29,13 +29,12 @@ public interface QuestionMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDTO(QuestionRequestDTO requestDTO, @MappingTarget Question question);
 
-    default java.util.List<QuestionResponseDTO.QuizInfoDTO> mapQuizzesToDTO(java.util.List<Quiz> quizzes) {
+    default java.util.List<QuestionResponseDTO.QuizInfoDTO> mapQuizzesToDTO(java.util.Set<Quiz> quizzes) {
         if (quizzes == null || quizzes.isEmpty()) {
             return java.util.Collections.emptyList();
         }
         try {
             return quizzes.stream()
-                .distinct()
                 .map(quiz -> new QuestionResponseDTO.QuizInfoDTO(quiz.getId(), quiz.getTitle()))
                 .toList();
         } catch (Exception e) {

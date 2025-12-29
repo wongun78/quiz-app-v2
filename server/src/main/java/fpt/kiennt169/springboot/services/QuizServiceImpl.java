@@ -73,7 +73,7 @@ public class QuizServiceImpl implements QuizService {
     @Override
     @Transactional(readOnly = true)
     public QuizDetailResponseDTO getWithQuestions(UUID id) {
-        Quiz quiz = quizRepository.findWithDetailsById(id)
+        Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
         return quizMapper.toDetailResponseDTO(quiz);
     }
@@ -131,7 +131,7 @@ public class QuizServiceImpl implements QuizService {
     }
     
     private QuizDetailResponseDTO getQuizWithDetails(UUID quizId) {
-        Quiz quiz = quizRepository.findWithDetailsById(quizId)
+        Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
         return quizMapper.toDetailResponseDTO(quiz);
     }

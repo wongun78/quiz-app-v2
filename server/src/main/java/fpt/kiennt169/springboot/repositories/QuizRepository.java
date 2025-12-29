@@ -17,9 +17,6 @@ import fpt.kiennt169.springboot.entities.Quiz;
 public interface QuizRepository extends JpaRepository<Quiz, UUID>, JpaSpecificationExecutor<Quiz> {
     
     @EntityGraph(attributePaths = {"questions"})
-    Optional<Quiz> findWithDetailsById(UUID id);
-    
-    @EntityGraph(attributePaths = {"questions"})
     @Override
     Optional<Quiz> findById(UUID id);
     

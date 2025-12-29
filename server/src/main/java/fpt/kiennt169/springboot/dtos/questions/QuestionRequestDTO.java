@@ -11,7 +11,8 @@ import java.util.List;
 @Schema(description = "Question creation/update request payload")
 public record QuestionRequestDTO(
     
-    @Schema(description = "Question content/text", example = "What is Java?")
+    @Schema(description = "Question content/text", 
+            example = "What is the correct syntax to output 'Hello World' in Java?")
     @NotBlank(message = "{validation.question.content.notblank}")
     String content,
     
@@ -20,7 +21,7 @@ public record QuestionRequestDTO(
     @NotNull(message = "{validation.question.type.notnull}")
     QuestionTypeEnum type,
     
-    @Schema(description = "Points for correct answer", example = "10", minimum = "1")
+    @Schema(description = "Points for correct answer", example = "5", minimum = "1")
     @NotNull(message = "{validation.question.score.notnull}")
     @Min(value = 1, message = "{validation.question.score.min}")
     Integer score,

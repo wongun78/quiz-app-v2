@@ -9,18 +9,18 @@ import java.util.UUID;
 @Schema(description = "User creation/update request payload")
 public record UserRequestDTO(
     
-    @Schema(description = "User email address (unique)", example = "nguyenvana@example.com")
+    @Schema(description = "User email address (unique)", example = "newuser@quiz.com")
     @NotBlank(message = "{validation.email.notblank}")
     @Email(message = "{validation.email.invalid}")
     String email,
     
     @Schema(description = "Strong password (min 8 chars, uppercase, lowercase, digit, special char)", 
-            example = "SecureP@ss123", 
+            example = "User@123", 
             minLength = 8)
     @StrongPassword
     String password,
     
-    @Schema(description = "User full name", example = "Nguyen Van A", maxLength = 100)
+    @Schema(description = "User full name", example = "Test User", maxLength = 100)
     @NotBlank(message = "{validation.fullname.notblank}")
     @Size(max = 100, message = "{validation.fullname.size}")
     String fullName,

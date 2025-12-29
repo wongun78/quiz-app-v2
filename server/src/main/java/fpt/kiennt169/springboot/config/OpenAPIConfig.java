@@ -39,29 +39,12 @@ public class OpenAPIConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Quiz Application REST API")
-                        .description("""
-                                Spring Boot REST API for Quiz Management System
-                                
-                                **Features:**
-                                - JWT Authentication (Login, Register, Refresh Token)
-                                - Role-Based Access Control (ADMIN, USER)
-                                - CRUD operations for Questions, Quizzes, Users
-                                - Exam submission with automatic scoring
-                                - Pagination & Sorting support
-                                - Soft delete functionality
-                                
-                                **How to use:**
-                                1. Click "Authorize" button (top right)
-                                2. Login via /api/v1/auth/login to get access token
-                                3. Enter token in format: `Bearer {your-token}`
-                                4. Test protected endpoints
-                                """)
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name(contactName)
                                 .email(contactEmail))
                         .license(new License()
-                                .name(" Quiz Application Project")
+                                .name("Quiz Application Project")
                                 .url(projectUrl)))
                 .servers(List.of(
                         new Server().url(serverUrl).description(serverDescription)
@@ -74,6 +57,16 @@ public class OpenAPIConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
-                                        .description("Enter JWT Bearer token from /api/v1/auth/login response")));
+                                        .description("""
+                                                JWT Authorization header using the Bearer scheme.
+                                                
+                                                **How to get token:**
+                                                1. Call POST /api/v1/auth/login
+                                                2. Copy 'token' from response
+                                                3. Enter in format: `<your_token_here>` (no 'Bearer' prefix needed)
+                                                
+                                                **Token expires in:** 24 hours
+                                                **Refresh token expires in:** 7 days
+                                                """)));
     }
 }

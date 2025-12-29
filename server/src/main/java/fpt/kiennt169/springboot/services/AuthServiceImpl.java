@@ -51,6 +51,10 @@ public class AuthServiceImpl implements AuthService {
                     )
             );
 
+            if (loginRequest.email() == null) {
+                throw new BadCredentialsException("Email cannot be null");
+            }
+            
             User user = userRepository.findByEmail(loginRequest.email())
                     .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.email()));
 
@@ -84,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDTO register(RegisterRequestDTO registerRequest) {
         log.debug("Attempting registration for email: {}", registerRequest.email());
 
-        if (userRepository.findByEmail(registerRequest.email()).isPresent()) {
+        if (registerRequest.email() != null && userRepository.findByEmail(registerRequest.email()).isPresent()) {
             throw new ResourceAlreadyExistsException("Email already registered: " + registerRequest.email());
         }
 
@@ -141,6 +145,10 @@ public class AuthServiceImpl implements AuthService {
             throw new BadCredentialsException("Cannot extract email from refresh token");
         }
         
+        if (refreshToken == null) {
+            throw new BadCredentialsException("Refresh token cannot be null");
+        }
+        
         User user = userRepository.findByRefreshTokenAndEmail(refreshToken, email)
                 .orElseThrow(() -> new BadCredentialsException("Refresh token not found or does not match"));
         
@@ -173,6 +181,10 @@ public class AuthServiceImpl implements AuthService {
                 .getContext()
                 .getAuthentication()
                 .getName();
+        
+        if (email == null) {
+            throw new BadCredentialsException("Email cannot be null");
+        }
         
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));

@@ -2,8 +2,8 @@ package fpt.kiennt169.springboot.entities;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import fpt.kiennt169.springboot.enums.QuestionTypeEnum;
 import lombok.*;
@@ -34,8 +34,8 @@ public class Question extends BaseEntity {
     private Integer score;
 
     @ManyToMany(mappedBy = "questions", fetch = FetchType.LAZY)
-    private List<Quiz> quizzes = new ArrayList<>();
+    private Set<Quiz> quizzes = new HashSet<>();
     
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Answer> answers = new ArrayList<>();
+    private Set<Answer> answers = new HashSet<>();
 }

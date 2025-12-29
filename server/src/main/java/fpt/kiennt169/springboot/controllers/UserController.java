@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -87,7 +89,8 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResponseDTO<UserResponseDTO>>> getAllUsers(
-            @Parameter(description = "Pagination parameters", example = "page=0&size=10&sort=createdAt,desc")
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC)
             Pageable pageable) {
         PageResponseDTO<UserResponseDTO> response = userService.getWithPaging(pageable);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.user.retrieved.all")));
@@ -116,7 +119,8 @@ public class UserController {
             @RequestParam(required = false) String fullName,
             @Parameter(description = "Active status filter")
             @RequestParam(required = false) Boolean active,
-            @Parameter(description = "Pagination parameters", example = "page=0&size=10&sort=createdAt,desc")
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC)
             Pageable pageable) {
         PageResponseDTO<UserResponseDTO> response = userService.searchWithPaging(fullName, active, pageable);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.user.retrieved.all")));

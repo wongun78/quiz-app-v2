@@ -1,6 +1,7 @@
 package fpt.kiennt169.springboot.services;
 
 import fpt.kiennt169.springboot.dtos.PageResponseDTO;
+import fpt.kiennt169.springboot.dtos.answers.AnswerRequestDTO;
 import fpt.kiennt169.springboot.dtos.questions.QuestionRequestDTO;
 import fpt.kiennt169.springboot.dtos.questions.QuestionResponseDTO;
 import fpt.kiennt169.springboot.entities.Answer;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -87,22 +90,42 @@ public class QuestionServiceImpl implements QuestionService {
         
         questionMapper.updateEntityFromDTO(requestDTO, question);
         
-        answerRepository.deleteAll(question.getAnswers());
-        question.getAnswers().clear();
-        
-        List<Answer> newAnswers = requestDTO.answers().stream()
-                .map(answerDTO -> {
-                    Answer answer = answerMapper.toEntity(answerDTO);
-                    answer.setQuestion(question);
-                    return answer;
-                })
-                .toList();
-        
-        question.setAnswers(newAnswers);
+        updateAnswers(question, requestDTO.answers());
         
         Question updatedQuestion = questionRepository.save(question);
         
         return questionMapper.toResponseDTO(updatedQuestion);
+    }
+
+    private void updateAnswers(Question question, List<AnswerRequestDTO> answerDTOs) {
+        Set<Answer> currentAnswers = question.getAnswers();
+        
+        Set<UUID> requestedIds = answerDTOs.stream()
+                .map(AnswerRequestDTO::id)
+                .filter(Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+        
+        Set<Answer> answersToDelete = currentAnswers.stream()
+                .filter(answer -> !requestedIds.contains(answer.getId()))
+                .collect(java.util.stream.Collectors.toSet());
+        answerRepository.deleteAll(answersToDelete);
+        currentAnswers.removeAll(answersToDelete);
+        
+        for (AnswerRequestDTO answerDTO : answerDTOs) {
+            if (answerDTO.id() != null) {
+                currentAnswers.stream()
+                        .filter(answer -> answer.getId().equals(answerDTO.id()))
+                        .findFirst()
+                        .ifPresent(answer -> {
+                            answer.setContent(answerDTO.content());
+                            answer.setIsCorrect(answerDTO.isCorrect());
+                        });
+            } else {
+                Answer newAnswer = answerMapper.toEntity(answerDTO);
+                newAnswer.setQuestion(question);
+                currentAnswers.add(newAnswer);
+            }
+        }
     }
 
     @Override

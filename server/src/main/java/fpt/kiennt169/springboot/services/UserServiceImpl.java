@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO create(UserRequestDTO requestDTO) {
-        if (userRepository.existsByEmail(requestDTO.email())) {
+        if (requestDTO.email() != null && userRepository.existsByEmail(requestDTO.email())) {
             throw new EmailAlreadyExistsException(requestDTO.email());
         }
         
@@ -83,8 +83,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponseDTO getByEmail(String email) {
-        User user = userRepository.findByEmail(email)
+    public UserResponseDTO getByEmail(String email) {        if (email == null) {
+            throw new IllegalArgumentException("Email cannot be null");
+        }
+                User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
         return userMapper.toResponseDTO(user);
     }

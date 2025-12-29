@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -76,7 +78,8 @@ public class QuestionController {
     })
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponseDTO<QuestionResponseDTO>>> getAllQuestions(
-            @Parameter(description = "Pagination parameters (page, size, sort)", example = "page=0&size=10&sort=createdAt,desc")
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC)
             Pageable pageable) {
         PageResponseDTO<QuestionResponseDTO> response = questionService.getWithPaging(pageable);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.question.retrieved.all")));
@@ -99,7 +102,8 @@ public class QuestionController {
             @RequestParam(required = false) String content,
             @Parameter(description = "Question type filter")
             @RequestParam(required = false) fpt.kiennt169.springboot.enums.QuestionTypeEnum type,
-            @Parameter(description = "Pagination parameters", example = "page=0&size=10&sort=createdAt,desc")
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC)
             Pageable pageable) {
         PageResponseDTO<QuestionResponseDTO> response = questionService.searchWithPaging(content, type, pageable);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.question.retrieved.all")));
