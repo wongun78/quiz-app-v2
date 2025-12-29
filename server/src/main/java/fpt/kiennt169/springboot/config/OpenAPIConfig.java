@@ -57,16 +57,6 @@ public class OpenAPIConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
-                                        .description("""
-                                                JWT Authorization header using the Bearer scheme.
-                                                
-                                                **How to get token:**
-                                                1. Call POST /api/v1/auth/login
-                                                2. Copy 'token' from response
-                                                3. Enter in format: `<your_token_here>` (no 'Bearer' prefix needed)
-                                                
-                                                **Token expires in:** 24 hours
-                                                **Refresh token expires in:** 7 days
-                                                """)));
+                                        ));
     }
 }
