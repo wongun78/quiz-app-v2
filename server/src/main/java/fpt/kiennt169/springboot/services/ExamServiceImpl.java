@@ -11,6 +11,7 @@ import fpt.kiennt169.springboot.repositories.QuizSubmissionRepository;
 import fpt.kiennt169.springboot.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,8 @@ public class ExamServiceImpl implements ExamService {
     private final UserRepository userRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
     
-    private static final double PASS_PERCENTAGE = 50.0;
+    @Value("${exam.pass-percentage}")
+    private double passPercentage;
 
     @Override
     @Transactional
@@ -78,7 +80,7 @@ public class ExamServiceImpl implements ExamService {
             }
         }
         
-        boolean passed = (achievedScore / totalScore) * 100.0 >= PASS_PERCENTAGE;
+        boolean passed = (achievedScore / totalScore) * 100.0 >= passPercentage;
         
         QuizSubmission submission = new QuizSubmission();
         submission.setUser(user);

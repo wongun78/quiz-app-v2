@@ -1,5 +1,6 @@
 package fpt.kiennt169.springboot.controllers;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -37,8 +38,11 @@ public class AuthController {
     private final AuthService authService;
     private final MessageUtil messageUtil;
     
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
-    private static final int REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60; 
+    @Value("${cookie.refresh-token.name}")
+    private String refreshTokenCookieName;
+    
+    @Value("${cookie.refresh-token.max-age}")
+    private int refreshTokenMaxAge; 
 
     @Operation(
         summary = "User login",
@@ -128,7 +132,7 @@ public class AuthController {
     @GetMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> refresh(
             @Parameter(description = "Refresh token from HttpOnly cookie", hidden = true)
-            @CookieValue(name = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken) {
+            @CookieValue(name = "refresh_token", required = false) String refreshToken) {
         log.info("Token refresh request received");
         
         AuthResponseDTO response = authService.refresh(refreshToken);
@@ -166,18 +170,18 @@ public class AuthController {
     
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie
-                .from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+                .from(refreshTokenCookieName, refreshToken)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(REFRESH_TOKEN_MAX_AGE)
+                .maxAge(refreshTokenMaxAge)
                 .sameSite("Strict")
                 .build();
     }
     
     private ResponseCookie deleteRefreshTokenCookie() {
         return ResponseCookie
-                .from(REFRESH_TOKEN_COOKIE_NAME, "")
+                .from(refreshTokenCookieName, "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")

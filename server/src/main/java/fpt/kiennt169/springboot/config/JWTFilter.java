@@ -31,24 +31,8 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             String jwtToken = extractTokenFromRequest(request);
             
-            if (StringUtils.hasText(jwtToken)) {
-                try {
-                    Authentication authentication = tokenService.getAuthenticationFromToken(jwtToken);
-                    
-                    if (authentication != null) {
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                        log.debug("Set authentication for user: {}", authentication.getName());
-                    } else {
-                        log.warn("Invalid JWT token - authentication is null");
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-                        return;
-                    }
-                } catch (Exception e) {
-                    log.error("JWT token validation failed: {}", e.getMessage());
-                    SecurityContextHolder.clearContext();
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-                    return;
-                }
+            if (StringUtils.hasText(jwtToken) && !authenticateWithToken(jwtToken, response)) {
+                return;
             }
         } catch (Exception e) {
             log.error("Cannot process JWT token: {}", e.getMessage());
@@ -56,6 +40,27 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean authenticateWithToken(String jwtToken, HttpServletResponse response) throws IOException {
+        try {
+            Authentication authentication = tokenService.getAuthenticationFromToken(jwtToken);
+            
+            if (authentication != null) {
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("Set authentication for user: {}", authentication.getName());
+                return true;
+            } else {
+                log.warn("Invalid JWT token - authentication is null");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("JWT token validation failed: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+            return false;
+        }
     }
 
     private String extractTokenFromRequest(HttpServletRequest request) {

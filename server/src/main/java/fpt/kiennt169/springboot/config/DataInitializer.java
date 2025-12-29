@@ -1,6 +1,8 @@
 package fpt.kiennt169.springboot.config;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,8 +39,27 @@ public class DataInitializer {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    
+    @Value("${data.init.admin.email}")
+    private String adminEmail;
+    
+    @Value("${data.init.admin.password}")
+    private String adminPassword;
+    
+    @Value("${data.init.admin.fullname}")
+    private String adminFullname;
+    
+    @Value("${data.init.user.email}")
+    private String userEmail;
+    
+    @Value("${data.init.user.password}")
+    private String userPassword;
+    
+    @Value("${data.init.user.fullname}")
+    private String userFullname;
 
     @Bean
+    @ConditionalOnProperty(name = "data.init.enabled", havingValue = "true", matchIfMissing = true)
     CommandLineRunner initDatabase() {
         return args -> {
             initRoles();
@@ -81,9 +102,9 @@ public class DataInitializer {
 
             // Admin user
             User admin = new User();
-            admin.setEmail("admin@quiz.com");
-            admin.setPassword(passwordEncoder.encode("Admin@123"));
-            admin.setFullName("Admin User");
+            admin.setEmail(adminEmail);
+            admin.setPassword(passwordEncoder.encode(adminPassword));
+            admin.setFullName(adminFullname);
             admin.setActive(true);
             admin.setRefreshToken(null); // Will be set on login
             admin.setRoles(Set.of(adminRole, userRole));
@@ -92,9 +113,9 @@ public class DataInitializer {
 
             // Regular user
             User user = new User();
-            user.setEmail("user@quiz.com");
-            user.setPassword(passwordEncoder.encode("User@123"));
-            user.setFullName("Test User");
+            user.setEmail(userEmail);
+            user.setPassword(passwordEncoder.encode(userPassword));
+            user.setFullName(userFullname);
             user.setActive(true);
             user.setRefreshToken(null); // Will be set on login
             user.setRoles(Set.of(userRole));
