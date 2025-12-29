@@ -5,7 +5,6 @@ import fpt.kiennt169.springboot.dtos.submissions.ExamSubmissionRequestDTO;
 import fpt.kiennt169.springboot.entities.*;
 import fpt.kiennt169.springboot.enums.QuestionTypeEnum;
 import fpt.kiennt169.springboot.exceptions.ResourceNotFoundException;
-import fpt.kiennt169.springboot.repositories.QuestionRepository;
 import fpt.kiennt169.springboot.repositories.QuizRepository;
 import fpt.kiennt169.springboot.repositories.QuizSubmissionRepository;
 import fpt.kiennt169.springboot.repositories.UserRepository;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 public class ExamServiceImpl implements ExamService {
 
     private final QuizRepository quizRepository;
-    private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
     
@@ -41,16 +39,16 @@ public class ExamServiceImpl implements ExamService {
         User user = userRepository.findById(requestDTO.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", requestDTO.userId()));
         
-        Quiz quiz = quizRepository.findById(requestDTO.quizId())
+        Quiz quiz = quizRepository.findByIdWithQuestionsAndAnswers(requestDTO.quizId())
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", requestDTO.quizId()));
         
-        if (!quiz.getActive()) {
+        if (!Boolean.TRUE.equals(quiz.getActive())) {
             throw new IllegalStateException("Quiz is not active");
         }
         
-        List<Question> quizQuestions = questionRepository.findByQuizzesId(quiz.getId());
+        List<Question> quizQuestions = quiz.getQuestions();
         
-        if (quizQuestions.isEmpty()) {
+        if (quizQuestions == null || quizQuestions.isEmpty()) {
             throw new IllegalStateException("Quiz has no questions");
         }
         

@@ -19,6 +19,9 @@ public interface QuizRepository extends JpaRepository<Quiz, UUID>, JpaSpecificat
     @EntityGraph(attributePaths = {"questions"})
     @Override
     Optional<Quiz> findById(UUID id);
+   
+    @EntityGraph(attributePaths = {"questions", "questions.answers"})
+    Optional<Quiz> findByIdWithQuestionsAndAnswers(UUID id);
     
     @Override
     Page<Quiz> findAll(Specification<Quiz> spec, Pageable pageable);

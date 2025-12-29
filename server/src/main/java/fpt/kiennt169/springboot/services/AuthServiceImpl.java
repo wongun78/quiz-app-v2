@@ -50,10 +50,6 @@ public class AuthServiceImpl implements AuthService {
                             loginRequest.password()
                     )
             );
-
-            if (loginRequest.email() == null) {
-                throw new BadCredentialsException("Email cannot be null");
-            }
             
             User user = userRepository.findByEmail(loginRequest.email())
                     .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.email()));
