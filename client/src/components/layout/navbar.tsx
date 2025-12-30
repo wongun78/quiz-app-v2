@@ -13,7 +13,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const isAuthenticated = true;
-  // const isAuthenticated = false;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-sm">
@@ -94,19 +93,7 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-4">
-          {!isAuthenticated ? (
-            <>
-              <Link
-                to="/login"
-                className="text-sm font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
-              >
-                Login
-              </Link>
-              <Button asChild>
-                <Link to="/register">Register</Link>
-              </Button>
-            </>
-          ) : (
+          {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -136,6 +123,18 @@ const Navbar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-sm font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
+              >
+                Login
+              </Link>
+              <Button asChild>
+                <Link to="/register">Register</Link>
+              </Button>
+            </>
           )}
         </div>
       </div>

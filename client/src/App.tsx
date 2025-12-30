@@ -1,22 +1,22 @@
 import { Routes, Route } from "react-router-dom";
 
-import Layout from "./components/layout/main-layout";
+import Layout from "@/components/layout/main-layout";
 import HomePage from "@/pages/home";
-import AboutPage from "./pages/about";
-import ContactPage from "./pages/contact";
-import QuizPage from "./pages/quizzes";
+import AboutPage from "@/pages/about";
+import ContactPage from "@/pages/contact";
+import QuizPage from "@/pages/quizzes";
 
-import LoginPage from "./pages/auth/login";
-import RegisterPage from "./pages/auth/register";
+import LoginPage from "@/pages/auth/login";
+import RegisterPage from "@/pages/auth/register";
 
-import UserManagementPage from "./pages/admin/UserManagementPage";
+import UserManagementPage from "@/pages/admin/UserManagementPage";
 
-import NotFoundPage from "./pages/error/404";
-import ForbiddenPage from "./pages/error/403";
-import AdminLayout from "./components/layout/admin-layout";
-import QuizManagementPage from "./pages/admin/QuizManagementPage";
-import QuestionManagementPage from "./pages/admin/QuestionManagementPage";
-import RoleManagementPage from "./pages/admin/RoleManagementPage";
+import NotFoundPage from "@/pages/error/404";
+import ForbiddenPage from "@/pages/error/403";
+import AdminLayout from "@/components/layout/admin-layout";
+import QuizManagementPage from "@/pages/admin/QuizManagementPage";
+import QuestionManagementPage from "@/pages/admin/QuestionManagementPage";
+import RoleManagementPage from "@/pages/admin/RoleManagementPage";
 
 function App() {
   return (

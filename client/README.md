@@ -60,7 +60,7 @@ A modern, full-featured quiz management platform built with React 19, TypeScript
 ## 📁 Project Structure
 
 ```
-project-fe/
+client/
 ├── public/                 # Static assets
 ├── src/
 │   ├── assets/            # Images, icons, and other media
@@ -112,7 +112,7 @@ project-fe/
 
 ```bash
 git clone <repository-url>
-cd project-fe
+cd client
 ```
 
 2. **Install dependencies**
