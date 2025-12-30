@@ -1,4 +1,4 @@
-FROM gradle:8.5-jdk21-alpine AS build
+FROM gradle:8.5-jdk21 AS build
 
 WORKDIR /app
 
@@ -6,19 +6,20 @@ COPY gradlew .
 COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
+COPY gradle.properties .
 
-RUN ./gradlew dependencies --no-daemon || return 0
+RUN chmod +x ./gradlew && ./gradlew dependencies --no-daemon || true
 
 COPY src src
 
 RUN ./gradlew bootJar --no-daemon -x test
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 
 LABEL maintainer="Quiz Application"
 LABEL description="Spring Boot Quiz REST API"
 
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN groupadd --system spring && useradd --system --gid spring spring
 
 WORKDIR /app
 
@@ -31,7 +32,7 @@ USER spring
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 ENV SPRING_PROFILES_ACTIVE=prod
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
