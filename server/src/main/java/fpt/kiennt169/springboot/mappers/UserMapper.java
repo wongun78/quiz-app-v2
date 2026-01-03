@@ -16,7 +16,14 @@ public interface UserMapper {
     UserResponseDTO toResponseDTO(User user);
  
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "password", ignore = true) 
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "email", ignore = true)
+    @Mapping(target = "username", ignore = true)
+    @Mapping(target = "firstName", ignore = true)
+    @Mapping(target = "lastName", ignore = true)
+    @Mapping(target = "fullName", ignore = true)
+    @Mapping(target = "dateOfBirth", ignore = true)
+    @Mapping(target = "phoneNumber", ignore = true)
     @Mapping(target = "roles", ignore = true) 
     @Mapping(target = "submissions", ignore = true)
     @Mapping(target = "refreshToken", ignore = true)

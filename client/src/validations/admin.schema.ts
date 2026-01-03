@@ -1,30 +1,57 @@
 import { z } from "zod";
 import { VALIDATION } from "@/config/constants";
 
-export const userSchema = z.object({
-  email: z.email({ error: "Invalid email format" }),
+export const userSchema = z
+  .object({
+    firstName: z
+      .string()
+      .min(1, "First name is required")
+      .max(50, "First name must be less than 50 characters"),
 
-  fullName: z
-    .string()
-    .min(1, "Full name is required")
-    .min(2, "Full name must be at least 2 characters")
-    .max(100, "Full name must be less than 100 characters"),
+    lastName: z
+      .string()
+      .min(1, "Last name is required")
+      .max(50, "Last name must be less than 50 characters"),
 
-  password: z
-    .string()
-    .min(
-      VALIDATION.PASSWORD_MIN_LENGTH,
-      `Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`
-    )
-    .refine((val) => VALIDATION.PASSWORD_REGEX.test(val), {
-      message:
-        "Password must contain uppercase, lowercase, number and special character",
-    }),
+    email: z.string().min(1, "Email is required").email("Invalid email format"),
 
-  active: z.boolean().optional().default(true),
+    username: z
+      .string()
+      .min(3, "Username must be at least 3 characters")
+      .max(50, "Username must be less than 50 characters")
+      .regex(
+        /^[a-zA-Z0-9_]+$/,
+        "Username can only contain letters, numbers, and underscores"
+      ),
 
-  roleIds: z.array(z.uuid({ error: "Invalid role ID format" })).optional(),
-});
+    password: z
+      .string()
+      .min(
+        VALIDATION.PASSWORD_MIN_LENGTH,
+        `Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`
+      )
+      .refine((val) => VALIDATION.PASSWORD_REGEX.test(val), {
+        message:
+          "Password must contain uppercase, lowercase, number and special character",
+      }),
+
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+
+    dateOfBirth: z.string().optional(),
+
+    phoneNumber: z
+      .string()
+      .max(20, "Phone number must be less than 20 characters")
+      .optional(),
+
+    active: z.boolean().default(true),
+
+    roleIds: z.array(z.string()).optional().default([]),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export const roleSchema = z.object({
   name: z

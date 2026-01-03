@@ -119,7 +119,10 @@ public class DataInitializer {
             // Admin user
             User admin = new User();
             admin.setEmail(adminEmail);
+            admin.setUsername(adminEmail.substring(0, adminEmail.indexOf('@')));
             admin.setPassword(passwordEncoder.encode(adminPassword));
+            admin.setFirstName("Admin");
+            admin.setLastName("User");
             admin.setFullName(adminFullname);
             admin.setActive(true);
             admin.setRefreshToken(null); // Will be set on login
@@ -130,7 +133,10 @@ public class DataInitializer {
             // Regular user
             User user = new User();
             user.setEmail(userEmail);
+            user.setUsername(userEmail.substring(0, userEmail.indexOf('@')));
             user.setPassword(passwordEncoder.encode(userPassword));
+            user.setFirstName("Test");
+            user.setLastName("User");
             user.setFullName(userFullname);
             user.setActive(true);
             user.setRefreshToken(null); // Will be set on login
