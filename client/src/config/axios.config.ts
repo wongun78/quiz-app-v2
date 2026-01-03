@@ -5,9 +5,9 @@ import axios, {
 } from "axios";
 import { Mutex } from "async-mutex";
 import { toast } from "react-toastify";
-import { API_BASE_URL, IS_DEV } from "./env";
 import { STORAGE_KEYS, HTTP_STATUS, ERROR_MESSAGES, ROUTES } from "./constants";
 import type { ApiResponse, AuthResponse } from "@/types/backend";
+import { API_BASE_URL, env } from "./env";
 
 // Mutex to prevent race conditions when refreshing token
 const mutex = new Mutex();
@@ -18,7 +18,7 @@ let refreshTokenPromise: Promise<string | null> | null = null;
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: env.apiTimeout,
   headers: {
     "Content-Type": "application/json",
   },
@@ -33,14 +33,6 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    if (IS_DEV) {
-      console.log("Request:", {
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        hasToken: !!accessToken,
-      });
-    }
-
     return config;
   },
   (error: AxiosError) => {
@@ -50,28 +42,12 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    if (IS_DEV) {
-      console.log("✅ Response:", {
-        status: response.status,
-        url: response.config.url,
-        data: response.data,
-      });
-    }
-
     return response.data;
   },
 
   // Error response
   async (error: AxiosError) => {
     const { response, config } = error;
-
-    if (IS_DEV) {
-      console.error("❌ Error:", {
-        status: response?.status,
-        url: config?.url,
-        message: error.message,
-      });
-    }
 
     if (!response) {
       throw error;
@@ -107,15 +83,18 @@ axiosInstance.interceptors.response.use(
         break;
 
       case HTTP_STATUS.FORBIDDEN: // 403
-        handleForbidden();
+        // Don't redirect for auth endpoints - let the UI handle the error
+        if (!config?.url?.includes("/auth/")) {
+          handleForbidden();
+        }
         break;
 
       case HTTP_STATUS.NOT_FOUND: // 404
-        toast.error(ERROR_MESSAGES.NOT_FOUND);
+        // Don't show toast here - let the component handle it to avoid duplicates
         break;
 
       case HTTP_STATUS.INTERNAL_SERVER_ERROR: // 500
-        toast.error(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+        // Don't show toast here - let the component handle it to avoid duplicates
         break;
 
       case HTTP_STATUS.BAD_REQUEST: // 400
@@ -123,7 +102,8 @@ axiosInstance.interceptors.response.use(
         break;
 
       default:
-        toast.error(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+        // Don't show generic error toast - let component handle specific errors
+        break;
     }
 
     throw error;
@@ -159,10 +139,7 @@ const handleRefreshToken = async (): Promise<string | null> => {
       }
 
       return null;
-    } catch (error) {
-      if (IS_DEV) {
-        console.error("❌ Refresh token failed:", error);
-      }
+    } catch (_error) {
       return null;
     } finally {
       // Clear promise after completion
