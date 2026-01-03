@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   CardContent,
   CardFooter,
@@ -11,7 +12,33 @@ import {
 } from "@/components/ui/card";
 import { FaPlus, FaSync, FaSearch } from "react-icons/fa";
 
-const RoleSearchFilter = () => {
+interface RoleSearchFilterProps {
+  onSearch: (params: { name?: string; status?: boolean }) => void;
+  onClear: () => void;
+  onCreate: () => void;
+}
+
+const RoleSearchFilter = ({
+  onSearch,
+  onClear,
+  onCreate,
+}: RoleSearchFilterProps) => {
+  const [searchName, setSearchName] = useState<string>("");
+  const [activeOnly, setActiveOnly] = useState<boolean>(false);
+
+  const handleSearch = () => {
+    onSearch({
+      name: searchName.trim() || undefined,
+      status: activeOnly ? true : undefined,
+    });
+  };
+
+  const handleClear = () => {
+    setSearchName("");
+    setActiveOnly(false);
+    onClear();
+  };
+
   return (
     <CardWrap>
       <CardHeader>
@@ -20,29 +47,48 @@ const RoleSearchFilter = () => {
       <CardContent>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="space-y-2 flex-1">
-            <Label htmlFor="search-role">Name</Label>
-            <Input id="search-role" placeholder="Enter role name to search" />
+            <Label htmlFor="search-role-name">Role Name</Label>
+            <Input
+              id="search-role-name"
+              type="text"
+              placeholder="Enter role name to search..."
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
           </div>
-
           <div className="space-y-2 flex-1">
             <Label>Status</Label>
-            <div className="flex items-center space-x-2">
-              <Checkbox id="status-filter" />
-              <Label htmlFor="status-filter">Active</Label>
+            <div className="flex items-center space-x-2 h-10">
+              <Checkbox
+                id="active-only"
+                checked={activeOnly}
+                onCheckedChange={(checked) => setActiveOnly(checked as boolean)}
+              />
+              <label
+                htmlFor="active-only"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Active
+              </label>
             </div>
           </div>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col-reverse md:flex-row md:justify-between gap-4 border-t pt-6">
-        <Button>
-          <FaPlus /> Create
+        <Button onClick={onCreate}>
+          <FaPlus /> Create Role
         </Button>
 
         <div className="flex gap-2">
-          <Button variant="outline" className="text-muted-foreground">
+          <Button
+            variant="outline"
+            className="text-muted-foreground"
+            onClick={handleClear}
+          >
             <FaSync /> Clear
           </Button>
-          <Button>
+          <Button onClick={handleSearch}>
             <FaSearch /> Search
           </Button>
         </div>

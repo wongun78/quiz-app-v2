@@ -1,10 +1,9 @@
 package fpt.kiennt169.springboot.entities;
 
+import fpt.kiennt169.springboot.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.UUID;
-
-import fpt.kiennt169.springboot.enums.RoleEnum;
 
 @Getter
 @Setter
@@ -19,6 +18,9 @@ public class Role extends BaseEntity {
     private UUID id;
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true)
     private RoleEnum name;
+    
+    @Column(length = 200)
+    private String description;
 }

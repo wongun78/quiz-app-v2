@@ -35,6 +35,15 @@ public interface RoleService {
     PageResponseDTO<RoleResponseDTO> getAll(Pageable pageable);
     
     /**
+     * Search roles by name with pagination
+     * 
+     * @param name the role name to search for (optional)
+     * @param pageable pagination information
+     * @return page of role responses matching the search criteria
+     */
+    PageResponseDTO<RoleResponseDTO> search(String name, Pageable pageable);
+    
+    /**
      * Get a role by ID
      * 
      * @param id the role ID

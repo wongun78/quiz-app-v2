@@ -1,6 +1,5 @@
 package fpt.kiennt169.springboot.dtos.users;
 
-import fpt.kiennt169.springboot.enums.RoleEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +18,6 @@ public record UserResponseDTO(
     @Schema(description = "Whether the user account is active", example = "true")
     Boolean active,
     
-    @Schema(description = "Set of roles assigned to this user")
-    Set<RoleEnum> roles
+    @Schema(description = "Set of roles assigned to this user", example = "[ROLE_ADMIN, ROLE_USER]")
+    Set<String> roles
 ) {}

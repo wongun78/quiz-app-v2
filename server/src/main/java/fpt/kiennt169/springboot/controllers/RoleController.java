@@ -89,6 +89,34 @@ public class RoleController {
         PageResponseDTO<RoleResponseDTO> response = roleService.getAll(pageable);
         return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.role.retrieved.all")));
     }
+    
+    @Operation(
+        summary = "Search roles with pagination",
+        description = "Search roles by name with pagination support"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Roles searched successfully",
+            content = @Content(schema = @Schema(implementation = PageResponseDTO.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Requires ADMIN role",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<PageResponseDTO<RoleResponseDTO>>> searchRoles(
+            @Parameter(description = "Role name to search for")
+            @RequestParam(required = false) String name,
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
+            Pageable pageable) {
+        PageResponseDTO<RoleResponseDTO> response = roleService.search(name, pageable);
+        return ResponseEntity.ok(ApiResponse.success(response, messageUtil.getMessage("success.role.retrieved.all")));
+    }
 
     @Operation(
         summary = "Get role by ID",
@@ -154,7 +182,7 @@ public class RoleController {
 
     @Operation(
         summary = "Delete role",
-        description = "Soft delete a role"
+        description = "Soft delete a role (sets is_deleted = true, does not remove from database)"
     )
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(

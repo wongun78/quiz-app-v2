@@ -75,13 +75,33 @@ public class DataInitializer {
         if (roleRepository.count() == 0) {
             Role adminRole = new Role();
             adminRole.setName(RoleEnum.ROLE_ADMIN);
+            adminRole.setDescription("Administrator with full system access");
             roleRepository.save(adminRole);
             log.info("Created role: ROLE_ADMIN");
 
             Role userRole = new Role();
             userRole.setName(RoleEnum.ROLE_USER);
+            userRole.setDescription("Standard user with basic access");
             roleRepository.save(userRole);
             log.info("Created role: ROLE_USER");
+            
+            Role moderatorRole = new Role();
+            moderatorRole.setName(RoleEnum.ROLE_MODERATOR);
+            moderatorRole.setDescription("Moderator for content management");
+            roleRepository.save(moderatorRole);
+            log.info("Created role: ROLE_MODERATOR");
+            
+            Role managerRole = new Role();
+            managerRole.setName(RoleEnum.ROLE_MANAGER);
+            managerRole.setDescription("Manager for system operations");
+            roleRepository.save(managerRole);
+            log.info("Created role: ROLE_MANAGER");
+            
+            Role editorRole = new Role();
+            editorRole.setName(RoleEnum.ROLE_EDITOR);
+            editorRole.setDescription("Editor for content editing");
+            roleRepository.save(editorRole);
+            log.info("Created role: ROLE_EDITOR");
         }
     }
 
@@ -90,15 +110,11 @@ public class DataInitializer {
      */
     private void initUsers() {
         if (userRepository.count() == 0) {
-            Role adminRole = roleRepository.findAll().stream()
-                    .filter(r -> r.getName() == RoleEnum.ROLE_ADMIN)
-                    .findFirst()
-                    .orElseThrow();
+            Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
+                    .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found"));
             
-            Role userRole = roleRepository.findAll().stream()
-                    .filter(r -> r.getName() == RoleEnum.ROLE_USER)
-                    .findFirst()
-                    .orElseThrow();
+            Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
 
             // Admin user
             User admin = new User();

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,19 +37,109 @@ import {
   FaAngleRight,
   FaAngleDoubleRight,
 } from "react-icons/fa";
-
-interface Role {
-  id: number;
-  name: string;
-  description: string;
-  status: string;
-}
+import { toast } from "react-toastify";
+import type { RoleResponse } from "@/types/backend";
+import { roleService } from "@/services";
 
 interface RoleTableProps {
-  roles: Role[];
+  roles: RoleResponse[];
+  isLoading: boolean;
+  error: string | null;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalElements: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  onEdit: (role: RoleResponse) => void;
+  onRefetch: () => void;
 }
 
-const RoleTable = ({ roles }: RoleTableProps) => {
+const RoleTable = ({
+  roles,
+  isLoading,
+  error,
+  currentPage,
+  pageSize,
+  totalPages,
+  totalElements,
+  onPageChange,
+  onPageSizeChange,
+  onEdit,
+  onRefetch,
+}: RoleTableProps) => {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (role: RoleResponse) => {
+    if (!confirm(`Are you sure you want to delete role "${role.name}"?`)) {
+      return;
+    }
+
+    setDeletingId(role.id);
+    try {
+      await roleService.delete(role.id);
+      toast.success("Role deleted successfully");
+      onRefetch();
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Failed to delete role";
+      toast.error(message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    onPageSizeChange(parseInt(value, 10));
+    onPageChange(0); // Reset to first page
+  };
+
+  const renderPagination = () => {
+    const pages = [];
+    const maxVisiblePages = 3;
+    let startPage = Math.max(0, currentPage - 1);
+    let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    if (currentPage === 0) {
+      endPage = Math.min(totalPages - 1, maxVisiblePages - 1);
+    } else if (currentPage === totalPages - 1) {
+      startPage = Math.max(0, totalPages - maxVisiblePages);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onPageChange(i);
+            }}
+            isActive={i === currentPage}
+            className={
+              i === currentPage
+                ? "rounded-full border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                : "rounded-full border-primary text-primary hover:bg-primary/10"
+            }
+          >
+            {i + 1}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    return pages;
+  };
+
+  if (error) {
+    return (
+      <CardWrap>
+        <CardContent className="py-8 text-center text-destructive">
+          Error loading roles: {error}
+        </CardContent>
+      </CardWrap>
+    );
+  }
+
   return (
     <CardWrap>
       <CardHeader className="border-b">
@@ -65,42 +156,60 @@ const RoleTable = ({ roles }: RoleTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {roles.map((role) => (
-              <TableRow key={role.id} className="even:bg-muted/30">
-                <TableCell className="pl-6 font-medium">{role.name}</TableCell>
-                <TableCell>{role.description}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={
-                      role.status === "Yes"
-                        ? "bg-success/20 text-success border-success/30"
-                        : "bg-muted text-muted-foreground border-muted-foreground/30"
-                    }
-                  >
-                    {role.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right pr-6">
-                  <div className="flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <FaTrash />
-                    </Button>
-                  </div>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8">
+                  Loading...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : roles.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  No roles found
+                </TableCell>
+              </TableRow>
+            ) : (
+              roles.map((role) => (
+                <TableRow key={role.id} className="even:bg-muted/30">
+                  <TableCell className="pl-6 font-medium">
+                    {role.name}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {role.description || "No description"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={role.isDeleted ? "outline" : "secondary"}>
+                      {role.isDeleted ? "Inactive" : "Active"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right pr-6">
+                    <div className="flex justify-end">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                        onClick={() => onEdit(role)}
+                        disabled={deletingId === role.id}
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(role)}
+                        disabled={deletingId === role.id}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </CardContent>
@@ -108,9 +217,12 @@ const RoleTable = ({ roles }: RoleTableProps) => {
       <CardFooter className="flex items-center justify-between border-t">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
           <span>Items per page:</span>
-          <Select defaultValue="10">
+          <Select
+            value={pageSize.toString()}
+            onValueChange={handlePageSizeChange}
+          >
             <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder="10" />
+              <SelectValue placeholder={pageSize.toString()} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="5">5</SelectItem>
@@ -127,6 +239,8 @@ const RoleTable = ({ roles }: RoleTableProps) => {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary/10"
+                onClick={() => onPageChange(0)}
+                disabled={currentPage === 0}
               >
                 <FaAngleDoubleLeft />
               </Button>
@@ -136,40 +250,20 @@ const RoleTable = ({ roles }: RoleTableProps) => {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary/10"
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 0}
               >
                 <FaAngleLeft />
               </Button>
             </PaginationItem>
-            <PaginationItem>
-              <PaginationLink
-                href="#"
-                isActive
-                className="rounded-full border-primary bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                1
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink
-                href="#"
-                className="rounded-full border-primary text-primary hover:bg-primary/10"
-              >
-                2
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink
-                href="#"
-                className="rounded-full border-primary text-primary hover:bg-primary/10"
-              >
-                3
-              </PaginationLink>
-            </PaginationItem>
+            {renderPagination()}
             <PaginationItem>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary/10"
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1}
               >
                 <FaAngleRight />
               </Button>
@@ -179,6 +273,8 @@ const RoleTable = ({ roles }: RoleTableProps) => {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary/10"
+                onClick={() => onPageChange(totalPages - 1)}
+                disabled={currentPage >= totalPages - 1}
               >
                 <FaAngleDoubleRight />
               </Button>
@@ -187,7 +283,12 @@ const RoleTable = ({ roles }: RoleTableProps) => {
         </Pagination>
 
         <span className="text-sm text-muted-foreground hidden md:block">
-          1-{roles.length} of 32
+          {roles.length > 0
+            ? `${currentPage * pageSize + 1}-${Math.min(
+                (currentPage + 1) * pageSize,
+                totalElements
+              )} of ${totalElements}`
+            : "0 of 0"}
         </span>
       </CardFooter>
     </CardWrap>
