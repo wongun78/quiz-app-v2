@@ -220,6 +220,29 @@ public class QuizController {
     }
 
     @Operation(
+        summary = "Get questions in quiz",
+        description = "Retrieve all questions associated with a specific quiz"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Questions retrieved successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Quiz not found",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    @GetMapping("/{quizId}/questions")
+    public ResponseEntity<ApiResponse<java.util.List<fpt.kiennt169.springboot.dtos.questions.QuestionResponseDTO>>> getQuizQuestions(
+            @Parameter(description = "Quiz ID", required = true)
+            @PathVariable("quizId") UUID quizId) {
+        QuizDetailResponseDTO quiz = quizService.getWithQuestions(quizId);
+        return ResponseEntity.ok(ApiResponse.success(quiz.questions(), messageUtil.getMessage("success.quiz.questions_retrieved")));
+    }
+
+    @Operation(
         summary = "Add questions to quiz",
         description = "Add one or multiple questions to quiz. All questions must exist. Skips duplicates."
     )

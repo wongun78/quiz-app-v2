@@ -40,9 +40,16 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public QuestionResponseDTO create(QuestionRequestDTO requestDTO) {
         Question question = questionMapper.toEntity(requestDTO);
-
-        if (question.getAnswers() != null) {
-            question.getAnswers().forEach(answer -> answer.setQuestion(question));
+        
+        // Map answers from DTO and set bidirectional relationship
+        if (requestDTO.answers() != null && !requestDTO.answers().isEmpty()) {
+            Set<Answer> answers = new java.util.HashSet<>();
+            for (AnswerRequestDTO answerDTO : requestDTO.answers()) {
+                Answer answer = answerMapper.toEntity(answerDTO);
+                answer.setQuestion(question);
+                answers.add(answer);
+            }
+            question.setAnswers(answers);
         }
 
         Question savedQuestion = questionRepository.save(question);
