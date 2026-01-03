@@ -2,6 +2,7 @@ package fpt.kiennt169.springboot.services;
 
 import fpt.kiennt169.springboot.dtos.PageResponseDTO;
 import fpt.kiennt169.springboot.dtos.users.UserRequestDTO;
+import fpt.kiennt169.springboot.dtos.users.UserUpdateDTO;
 import fpt.kiennt169.springboot.dtos.users.UserResponseDTO;
 import fpt.kiennt169.springboot.entities.Role;
 import fpt.kiennt169.springboot.entities.User;
@@ -96,18 +97,33 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
-        if (requestDTO.email() != null && !user.getEmail().equals(requestDTO.email()) && userRepository.existsByEmail(requestDTO.email())) {
-                throw new EmailAlreadyExistsException(requestDTO.email());
-            }
+        UserUpdateDTO updateDTO = new UserUpdateDTO(
+            requestDTO.email(),
+            requestDTO.password(),
+            requestDTO.fullName(),
+            requestDTO.active(),
+            requestDTO.roleIds()
+        );
         
-        
-        userMapper.updateEntityFromDTO(requestDTO, user);
-        
-        if (requestDTO.password() != null) {
-            user.setPassword(passwordEncoder.encode(requestDTO.password()));
+        return updateWithDTO(user, updateDTO);
+    }
+    
+    private UserResponseDTO updateWithDTO(User user, UserUpdateDTO updateDTO) {
+        if (updateDTO.email() != null && !user.getEmail().equals(updateDTO.email()) && userRepository.existsByEmail(updateDTO.email())) {
+            throw new EmailAlreadyExistsException(updateDTO.email());
         }
         
-        assignRolesToUser(user, requestDTO.roleIds());
+        user.setEmail(updateDTO.email());
+        user.setFullName(updateDTO.fullName());
+        if (updateDTO.active() != null) {
+            user.setActive(updateDTO.active());
+        }
+        
+        if (updateDTO.password() != null && !updateDTO.password().isBlank()) {
+            user.setPassword(passwordEncoder.encode(updateDTO.password()));
+        }
+        
+        assignRolesToUser(user, updateDTO.roleIds());
         
         User updatedUser = userRepository.save(user);
         return userMapper.toResponseDTO(updatedUser);

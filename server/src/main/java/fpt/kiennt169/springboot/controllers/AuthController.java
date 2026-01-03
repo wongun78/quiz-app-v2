@@ -5,6 +5,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,13 +18,16 @@ import fpt.kiennt169.springboot.dtos.ApiResponse;
 import fpt.kiennt169.springboot.dtos.users.AuthResponseDTO;
 import fpt.kiennt169.springboot.dtos.users.LoginRequestDTO;
 import fpt.kiennt169.springboot.dtos.users.RegisterRequestDTO;
+import fpt.kiennt169.springboot.dtos.users.UserResponseDTO;
 import fpt.kiennt169.springboot.services.AuthService;
+import fpt.kiennt169.springboot.services.UserService;
 import fpt.kiennt169.springboot.util.MessageUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
     private final MessageUtil messageUtil;
     
     @Value("${cookie.refresh-token.name}")
@@ -129,7 +135,7 @@ public class AuthController {
             content = @Content(schema = @Schema(implementation = ApiResponse.class))
         )
     })
-    @GetMapping("/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> refresh(
             @Parameter(description = "Refresh token from HttpOnly cookie", hidden = true)
             @CookieValue(name = "refresh_token", required = false) String refreshToken) {
@@ -144,7 +150,7 @@ public class AuthController {
     
     @Operation(
         summary = "User logout",
-        description = "Logout current user. Invalidates refresh token in database and deletes HttpOnly cookie."
+        description = "Logout current user. Invalidates refresh token in database and deletes HttpOnly cookie. Requires valid JWT access token."
     )
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -158,6 +164,7 @@ public class AuthController {
         )
     })
     @PostMapping("/logout")
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> logout() {
         log.info("Logout request received");
         
@@ -188,5 +195,31 @@ public class AuthController {
                 .maxAge(0)
                 .sameSite("Strict")
                 .build();
+    }
+    
+    @Operation(
+        summary = "Get current authenticated user",
+        description = "Get the currently logged in user's information",
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User information retrieved successfully",
+            content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Invalid or missing token",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        
+        UserResponseDTO user = userService.getByEmail(email);
+        return ResponseEntity.ok(ApiResponse.success(user, "User information retrieved successfully"));
     }
 }

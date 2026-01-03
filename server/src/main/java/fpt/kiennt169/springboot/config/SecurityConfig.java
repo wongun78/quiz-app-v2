@@ -33,12 +33,15 @@ public class SecurityConfig {
 
     private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
     private String allowedOrigins;
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/v1/auth/**",
+            "/api/v1/auth/login",
+            "/api/v1/auth/register",
+            "/api/v1/auth/refresh",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api-docs/**",
@@ -105,6 +108,8 @@ public class SecurityConfig {
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authenticationProvider(authenticationProvider())
                     .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .exceptionHandling(exception -> exception
+                            .authenticationEntryPoint(authenticationEntryPoint))
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                             .anyRequest().authenticated());
