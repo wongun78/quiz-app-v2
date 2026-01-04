@@ -1,46 +1,3 @@
-export const API_ENDPOINTS = {
-  // Authentication
-  AUTH: {
-    LOGIN: "/api/v1/auth/login",
-    REGISTER: "/api/v1/auth/register",
-    LOGOUT: "/api/v1/auth/logout",
-    REFRESH: "/api/v1/auth/refresh",
-  },
-
-  // Quizzes
-  QUIZZES: {
-    BASE: "/api/v1/quizzes",
-    DETAIL: (id: string) => `/api/v1/quizzes/${id}`,
-    SEARCH: "/api/v1/quizzes/search",
-  },
-
-  // Questions
-  QUESTIONS: {
-    BASE: "/api/v1/questions",
-    DETAIL: (id: string) => `/api/v1/questions/${id}`,
-    SEARCH: "/api/v1/questions/search",
-  },
-
-  // Users
-  USERS: {
-    BASE: "/api/v1/users",
-    DETAIL: (id: string) => `/api/v1/users/${id}`,
-    SEARCH: "/api/v1/users/search",
-    BY_EMAIL: (email: string) => `/api/v1/users/email/${email}`,
-  },
-
-  // Roles
-  ROLES: {
-    BASE: "/api/v1/roles",
-    DETAIL: (id: string) => `/api/v1/roles/${id}`,
-  },
-
-  // Exam
-  EXAM: {
-    SUBMIT: "/api/v1/exam/submit",
-  },
-} as const;
-
 export const ROUTES = {
   // Public routes
   HOME: "/",
@@ -71,31 +28,57 @@ export const ROUTES = {
   FORBIDDEN: "/403",
 } as const;
 
+export const API_ENDPOINTS = {
+  AUTH: {
+    BASE: "/auth",
+    LOGIN: "/auth/login",
+    REGISTER: "/auth/register",
+    REFRESH: "/auth/refresh",
+    LOGOUT: "/auth/logout",
+    ME: "/auth/me",
+  },
+  USERS: {
+    BASE: "/users",
+    SEARCH: "/users/search",
+    BY_ID: (id: string) => `/users/${id}`,
+    BY_EMAIL: (email: string) => `/users/email/${email}`,
+  },
+  ROLES: {
+    BASE: "/roles",
+    SEARCH: "/roles/search",
+    BY_ID: (id: string) => `/roles/${id}`,
+  },
+  QUIZZES: {
+    BASE: "/quizzes",
+    SEARCH: "/quizzes/search",
+    BY_ID: (id: string) => `/quizzes/${id}`,
+    DETAILS: (id: string) => `/quizzes/${id}/details`,
+    QUESTIONS: (quizId: string) => `/quizzes/${quizId}/questions`,
+    REMOVE_QUESTION: (quizId: string, questionId: string) =>
+      `/quizzes/${quizId}/questions/${questionId}`,
+  },
+  QUESTIONS: {
+    BASE: "/questions",
+    SEARCH: "/questions/search",
+    BY_ID: (id: string) => `/questions/${id}`,
+  },
+} as const;
+
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: "access_token", //token
+  ACCESS_TOKEN: "access_token",
   REFRESH_TOKEN: "refresh_token",
   USER_INFO: "user_info",
   THEME: "theme",
 } as const;
 
-export const PAGINATION = {
-  DEFAULT_PAGE: 0,
-  DEFAULT_SIZE: 10,
-  DEFAULT_SORT: "createdAt,desc",
-  PAGE_SIZE_OPTIONS: [5, 10, 20, 50],
-} as const;
-
 export const VALIDATION = {
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+
   PASSWORD_MIN_LENGTH: 8,
   PASSWORD_REGEX:
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-} as const;
 
-export const UI = {
-  TOAST_DURATION: 3000,
-  DEBOUNCE_DELAY: 500,
-  ANIMATION_DURATION: 300,
+  PHONE_REGEX: /(84|0[35789])(\d{8})\b/,
 } as const;
 
 export const HTTP_STATUS = {
@@ -124,12 +107,33 @@ export const ROLES = {
   ADMIN: "ROLE_ADMIN",
 } as const;
 
-export const QUIZ_STATUS = {
-  ACTIVE: "active",
-  INACTIVE: "inactive",
+export const APP_INFO = {
+  NAME: "Quizzes",
+  DESCRIPTION:
+    "The leading online quiz platform in Vietnam. Enhance your knowledge and develop critical thinking every day.",
+  LOGO_ALT: "Quiz Logo",
+  COPYRIGHT_YEAR: 2025,
 } as const;
 
-export const QUESTION_TYPES = {
-  SINGLE_CHOICE: "SINGLE_CHOICE",
-  MULTIPLE_CHOICE: "MULTIPLE_CHOICE",
+export const CONTACT_INFO = {
+  EMAIL: "kiennt169@fpt.com",
+  PHONE: "+84 999 888 999",
+  PHONE_DISPLAY: "+84 999 888 999",
+  ADDRESS: "123 Khuong Dinh, Thanh Xuan, Ha Noi, Viet Nam",
+  GOOGLE_MAPS_URL:
+    "https://maps.google.com/?q=123+Khuong+Dinh,+Thanh+Xuan,+Ha+Noi,+Viet+Nam",
+} as const;
+
+export const NAV_LINKS = [
+  { label: "Home", path: "/" },
+  { label: "Quizzes", path: "/quizzes" },
+  { label: "About", path: "/about" },
+  { label: "Contact", path: "/contact" },
+] as const;
+
+export const SOCIAL_LINKS = {
+  TIKTOK: "#",
+  FACEBOOK: "#",
+  YOUTUBE: "#",
+  LINKEDIN: "#",
 } as const;

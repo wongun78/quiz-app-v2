@@ -9,11 +9,9 @@ import { STORAGE_KEYS, HTTP_STATUS, ERROR_MESSAGES, ROUTES } from "./constants";
 import type { ApiResponse, AuthResponse } from "@/types/backend";
 import { API_BASE_URL, env } from "./env";
 
-// Mutex to prevent race conditions when refreshing token
 const mutex = new Mutex();
 const NO_RETRY_HEADER = "x-no-retry";
 
-// Singleton promise for refresh token to avoid multiple refresh calls
 let refreshTokenPromise: Promise<string | null> | null = null;
 
 const axiosInstance: AxiosInstance = axios.create({
@@ -22,7 +20,7 @@ const axiosInstance: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Important: Send cookies for refresh token
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(
@@ -45,7 +43,6 @@ axiosInstance.interceptors.response.use(
     return response.data;
   },
 
-  // Error response
   async (error: AxiosError) => {
     const { response, config } = error;
 
@@ -83,18 +80,15 @@ axiosInstance.interceptors.response.use(
         break;
 
       case HTTP_STATUS.FORBIDDEN: // 403
-        // Don't redirect for auth endpoints - let the UI handle the error
         if (!config?.url?.includes("/auth/")) {
           handleForbidden();
         }
         break;
 
       case HTTP_STATUS.NOT_FOUND: // 404
-        // Don't show toast here - let the component handle it to avoid duplicates
         break;
 
       case HTTP_STATUS.INTERNAL_SERVER_ERROR: // 500
-        // Don't show toast here - let the component handle it to avoid duplicates
         break;
 
       case HTTP_STATUS.BAD_REQUEST: // 400
@@ -102,7 +96,6 @@ axiosInstance.interceptors.response.use(
         break;
 
       default:
-        // Don't show generic error toast - let component handle specific errors
         break;
     }
 
@@ -112,10 +105,8 @@ axiosInstance.interceptors.response.use(
 
 /**
  * Handle refresh token with mutex to prevent race conditions
- * Uses singleton pattern to avoid multiple refresh calls
  */
 const handleRefreshToken = async (): Promise<string | null> => {
-  // Return existing promise if refresh is already in progress
   if (refreshTokenPromise) {
     return refreshTokenPromise;
   }
@@ -127,7 +118,7 @@ const handleRefreshToken = async (): Promise<string | null> => {
         {},
         {
           headers: { [NO_RETRY_HEADER]: "true" },
-          withCredentials: true, // Send refresh token cookie
+          withCredentials: true,
         }
       );
 
@@ -139,10 +130,12 @@ const handleRefreshToken = async (): Promise<string | null> => {
       }
 
       return null;
-    } catch (_error) {
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Refresh token failed:", error);
+      }
       return null;
     } finally {
-      // Clear promise after completion
       refreshTokenPromise = null;
     }
   });
@@ -154,12 +147,9 @@ const handleRefreshToken = async (): Promise<string | null> => {
  * Handle 401 Unauthorized
  */
 const handleUnauthorized = () => {
-  // Clear auth data
   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-  localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
   localStorage.removeItem(STORAGE_KEYS.USER_INFO);
 
-  // Show notification
   toast.error(ERROR_MESSAGES.UNAUTHORIZED);
 
   // Redirect to login page
@@ -178,7 +168,7 @@ const handleUnauthorized = () => {
 const handleForbidden = () => {
   toast.error(ERROR_MESSAGES.FORBIDDEN);
 
-  // Redirect to 403 page if not already there
+  // Redirect to 403 page
   if (globalThis.location.pathname !== ROUTES.FORBIDDEN) {
     globalThis.location.href = ROUTES.FORBIDDEN;
   }

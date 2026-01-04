@@ -6,27 +6,16 @@ import type {
   UserRequest,
   PaginationParams,
 } from "@/types/backend";
+import { API_ENDPOINTS } from "@/config/constants";
 
-/**
- * User API Service
- * Handles all user-related API calls
- */
 class UserService {
-  private readonly basePath = "/users";
-
-  /**
-   * Get all users (paginated) - ADMIN only
-   */
   async getAll(params?: PaginationParams): Promise<PageResponse<UserResponse>> {
     const response = await axiosInstance.get<
       ApiResponse<PageResponse<UserResponse>>
-    >(this.basePath, { params });
+    >(API_ENDPOINTS.USERS.BASE, { params });
     return response.data!;
   }
 
-  /**
-   * Search users - ADMIN only
-   */
   async search(
     fullName?: string,
     active?: boolean,
@@ -34,61 +23,45 @@ class UserService {
   ): Promise<PageResponse<UserResponse>> {
     const response = await axiosInstance.get<
       ApiResponse<PageResponse<UserResponse>>
-    >(`${this.basePath}/search`, {
+    >(API_ENDPOINTS.USERS.SEARCH, {
       params: { fullName, active, ...params },
     });
     return response.data!;
   }
 
-  /**
-   * Get user by ID - ADMIN only
-   */
   async getById(id: string): Promise<UserResponse> {
     const response = await axiosInstance.get<ApiResponse<UserResponse>>(
-      `${this.basePath}/${id}`
+      API_ENDPOINTS.USERS.BY_ID(id)
     );
     return response.data!;
   }
 
-  /**
-   * Get user by email
-   */
   async getByEmail(email: string): Promise<UserResponse> {
     const response = await axiosInstance.get<ApiResponse<UserResponse>>(
-      `${this.basePath}/email/${email}`
+      API_ENDPOINTS.USERS.BY_EMAIL(email)
     );
     return response.data!;
   }
 
-  /**
-   * Create new user - ADMIN only
-   */
   async create(data: UserRequest): Promise<UserResponse> {
     const response = await axiosInstance.post<ApiResponse<UserResponse>>(
-      this.basePath,
+      API_ENDPOINTS.USERS.BASE,
       data
     );
     return response.data!;
   }
 
-  /**
-   * Update user - ADMIN only
-   */
   async update(id: string, data: UserRequest): Promise<UserResponse> {
     const response = await axiosInstance.put<ApiResponse<UserResponse>>(
-      `${this.basePath}/${id}`,
+      API_ENDPOINTS.USERS.BY_ID(id),
       data
     );
     return response.data!;
   }
 
-  /**
-   * Delete user (soft delete) - ADMIN only
-   */
   async delete(id: string): Promise<void> {
-    await axiosInstance.delete(`${this.basePath}/${id}`);
+    await axiosInstance.delete(API_ENDPOINTS.USERS.BY_ID(id));
   }
 }
 
-// Export singleton instance
 export const userService = new UserService();

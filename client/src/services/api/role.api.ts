@@ -6,78 +6,54 @@ import type {
   RoleRequest,
   PaginationParams,
 } from "@/types/backend";
+import { API_ENDPOINTS } from "@/config/constants";
 
-/**
- * Role API Service
- * Handles all role-related API calls
- */
 class RoleService {
-  private readonly basePath = "/roles";
-
-  /**
-   * Get all roles (paginated) - ADMIN only
-   */
   async getAll(params?: PaginationParams): Promise<PageResponse<RoleResponse>> {
     const response = await axiosInstance.get<
       ApiResponse<PageResponse<RoleResponse>>
-    >(this.basePath, { params });
+    >(API_ENDPOINTS.ROLES.BASE, { params });
     return response.data!;
   }
 
-  /**
-   * Search roles - ADMIN only
-   */
   async search(
     name?: string,
     params?: PaginationParams
   ): Promise<PageResponse<RoleResponse>> {
     const response = await axiosInstance.get<
       ApiResponse<PageResponse<RoleResponse>>
-    >(`${this.basePath}/search`, {
+    >(API_ENDPOINTS.ROLES.SEARCH, {
       params: { name, ...params },
     });
     return response.data!;
   }
 
-  /**
-   * Get role by ID - ADMIN only
-   */
   async getById(id: string): Promise<RoleResponse> {
     const response = await axiosInstance.get<ApiResponse<RoleResponse>>(
-      `${this.basePath}/${id}`
+      API_ENDPOINTS.ROLES.BY_ID(id)
     );
     return response.data!;
   }
 
-  /**
-   * Create new role - ADMIN only
-   */
   async create(data: RoleRequest): Promise<RoleResponse> {
     const response = await axiosInstance.post<ApiResponse<RoleResponse>>(
-      this.basePath,
+      API_ENDPOINTS.ROLES.BASE,
       data
     );
     return response.data!;
   }
 
-  /**
-   * Update role - ADMIN only
-   */
   async update(id: string, data: RoleRequest): Promise<RoleResponse> {
     const response = await axiosInstance.put<ApiResponse<RoleResponse>>(
-      `${this.basePath}/${id}`,
+      API_ENDPOINTS.ROLES.BY_ID(id),
       data
     );
     return response.data!;
   }
 
-  /**
-   * Delete role - ADMIN only
-   */
   async delete(id: string): Promise<void> {
-    await axiosInstance.delete(`${this.basePath}/${id}`);
+    await axiosInstance.delete(API_ENDPOINTS.ROLES.BY_ID(id));
   }
 }
 
-// Export singleton instance
 export const roleService = new RoleService();

@@ -28,5 +28,3 @@ const getEnvConfig = (): EnvConfig => {
 export const env = getEnvConfig();
 
 export const API_BASE_URL = env.apiBaseUrl;
-export const IS_DEV = env.isDevelopment;
-export const IS_PROD = env.isProduction;
