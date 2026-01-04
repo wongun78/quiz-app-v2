@@ -20,22 +20,22 @@ export const userSchema = z
       .min(3, "Username must be at least 3 characters")
       .max(50, "Username must be less than 50 characters")
       .regex(
-        /^[a-zA-Z0-9_]+$/,
+        /^\w+$/,
         "Username can only contain letters, numbers, and underscores"
       ),
 
     password: z
       .string()
-      .min(
-        VALIDATION.PASSWORD_MIN_LENGTH,
-        `Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`
-      )
-      .refine((val) => VALIDATION.PASSWORD_REGEX.test(val), {
+      .optional()
+      .refine((val) => !val || val.length >= VALIDATION.PASSWORD_MIN_LENGTH, {
+        message: `Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`,
+      })
+      .refine((val) => !val || VALIDATION.PASSWORD_REGEX.test(val), {
         message:
           "Password must contain uppercase, lowercase, number and special character",
       }),
 
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+    confirmPassword: z.string().optional(),
 
     dateOfBirth: z.string().optional(),
 
@@ -48,10 +48,18 @@ export const userSchema = z
 
     roleIds: z.array(z.string()).optional().default([]),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+  .refine(
+    (data) => {
+      if (data.password) {
+        return data.password === data.confirmPassword;
+      }
+      return true;
+    },
+    {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    }
+  );
 
 export const roleSchema = z.object({
   name: z
@@ -71,5 +79,26 @@ export const roleSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export const answerSchema = z.object({
+  id: z.string().optional(),
+  content: z.string().min(1, "Answer content is required"),
+  isCorrect: z.boolean().default(false),
+  active: z.boolean().default(true),
+});
+
+export const questionSchema = z.object({
+  content: z.string().min(1, "Question content is required"),
+
+  type: z.enum(["SINGLE_CHOICE", "MULTIPLE_CHOICE"], {
+    message: "Question type is required",
+  }),
+
+  score: z.number().min(1, "Score must be at least 1").default(10),
+
+  active: z.boolean().default(true),
+});
+
 export type UserFormData = z.infer<typeof userSchema>;
 export type RoleFormData = z.infer<typeof roleSchema>;
+export type QuestionFormData = z.infer<typeof questionSchema>;
+export type AnswerFormData = z.infer<typeof answerSchema>;
