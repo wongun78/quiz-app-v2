@@ -41,14 +41,12 @@ public class RoleServiceImpl implements RoleService {
         Page<Role> rolePage;
         
         if (name != null && !name.trim().isEmpty()) {
-            // Search using database query for better performance
             String searchTerm = name.trim().toUpperCase();
             java.util.List<Role> allRoles = roleRepository.findAll();
             java.util.List<Role> filteredRoles = allRoles.stream()
                 .filter(role -> role.getName().name().toUpperCase().contains(searchTerm))
                 .toList();
             
-            // Create page from filtered list
             int start = (int) pageable.getOffset();
             int end = Math.min((start + pageable.getPageSize()), filteredRoles.size());
             java.util.List<Role> pageContent = start < filteredRoles.size() 

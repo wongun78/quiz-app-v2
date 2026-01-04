@@ -41,7 +41,7 @@ public interface QuizMapper {
                 question.getContent(),
                 question.getType(),
                 question.getScore(),
-                List.of(), // Empty quizzes list to break circular reference
+                List.of(), 
                 question.getAnswers() != null 
                     ? question.getAnswers().stream()
                         .map(answer -> new fpt.kiennt169.springboot.dtos.answers.AnswerResponseDTO(

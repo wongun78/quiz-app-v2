@@ -42,11 +42,10 @@ public class UserServiceImpl implements UserService {
         
         User user = userMapper.toEntity(requestDTO);
         
-        // Set fields that MapStruct doesn't auto-map
         user.setEmail(requestDTO.email());
         user.setFirstName(requestDTO.firstName());
         user.setLastName(requestDTO.lastName());
-        user.setUsername(requestDTO.username()); // Use username from DTO
+        user.setUsername(requestDTO.username()); 
         user.setFullName(requestDTO.firstName() + " " + requestDTO.lastName());
         user.setDateOfBirth(requestDTO.dateOfBirth());
         user.setPhoneNumber(requestDTO.phoneNumber());
@@ -108,12 +107,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
-        // Update username if provided (username can be changed)
         if (requestDTO.username() != null && !requestDTO.username().equals(user.getUsername())) {
             user.setUsername(requestDTO.username());
         }
         
-        // Update firstName, lastName to regenerate fullName
         if (requestDTO.firstName() != null) {
             user.setFirstName(requestDTO.firstName());
         }

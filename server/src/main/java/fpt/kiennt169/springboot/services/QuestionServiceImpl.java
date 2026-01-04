@@ -41,7 +41,6 @@ public class QuestionServiceImpl implements QuestionService {
     public QuestionResponseDTO create(QuestionRequestDTO requestDTO) {
         Question question = questionMapper.toEntity(requestDTO);
         
-        // Map answers from DTO and set bidirectional relationship
         if (requestDTO.answers() != null && !requestDTO.answers().isEmpty()) {
             Set<Answer> answers = new java.util.HashSet<>();
             for (AnswerRequestDTO answerDTO : requestDTO.answers()) {

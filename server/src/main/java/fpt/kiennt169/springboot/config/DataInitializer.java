@@ -116,7 +116,6 @@ public class DataInitializer {
             Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
                     .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
 
-            // Admin user
             User admin = new User();
             admin.setEmail(adminEmail);
             admin.setUsername(adminEmail.substring(0, adminEmail.indexOf('@')));
@@ -125,12 +124,11 @@ public class DataInitializer {
             admin.setLastName("User");
             admin.setFullName(adminFullname);
             admin.setActive(true);
-            admin.setRefreshToken(null); // Will be set on login
+            admin.setRefreshToken(null); 
             admin.setRoles(Set.of(adminRole, userRole));
             userRepository.save(admin);
             log.info("Created user: {} (admin)", admin.getEmail());
 
-            // Regular user
             User user = new User();
             user.setEmail(userEmail);
             user.setUsername(userEmail.substring(0, userEmail.indexOf('@')));
@@ -139,7 +137,7 @@ public class DataInitializer {
             user.setLastName("User");
             user.setFullName(userFullname);
             user.setActive(true);
-            user.setRefreshToken(null); // Will be set on login
+            user.setRefreshToken(null); 
             user.setRoles(Set.of(userRole));
             userRepository.save(user);
             log.info("Created user: {} (user)", user.getEmail());
@@ -152,7 +150,6 @@ public class DataInitializer {
     private void initQuizzes() {
         if (quizRepository.count() > 0) return;
 
-        // Quiz 1: Java Programming
         Quiz javaQuiz = createQuiz("Java Programming Basics", 
             "Test your knowledge of Java programming fundamentals", 30, true);
         
@@ -172,7 +169,6 @@ public class DataInitializer {
         javaQuiz.getQuestions().add(q2);
         quizRepository.save(javaQuiz);
 
-        // Quiz 2: Spring Boot
         Quiz springQuiz = createQuiz("Spring Boot Fundamentals", 
             "Assess your understanding of Spring Boot framework", 45, true);
         
