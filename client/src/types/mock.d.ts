@@ -1,39 +1,30 @@
-/**
- * Mock Data Types
- * These types are used for placeholder/mock data in components
- * before full backend integration
- */
-
 import type {
   QuizResponse,
   QuestionResponse,
   TeamMemberResponse,
 } from "./backend";
 
-// Extended Quiz type for mock data with UI-specific fields
 export interface MockQuiz extends Partial<QuizResponse> {
   id: string;
   title: string;
   description: string;
-  image?: string; // Local image path for mock data
-  duration?: string; // UI-friendly duration string like "15m"
-  durationMinutes?: number; // Backend duration in minutes
-  status?: string; // UI status like "active"
-  active?: boolean; // Backend active flag
+  image?: string;
+  duration?: string;
+  durationMinutes?: number;
+  status?: string;
+  active?: boolean;
 }
 
-// Extended Question type for mock data
 export interface MockQuestion extends Partial<QuestionResponse> {
   id: number | string;
   content: string;
   type: string;
-  answer?: any; // Mock field for single answer display
-  answers?: number | any[]; // Can be count or array
-  status?: string; // UI status string
-  order?: number; // Question order in quiz
+  answer?: any;
+  answers?: number | any[];
+  status?: string;
+  order?: number;
 }
 
-// Extended TeamMember for mock data
 export interface MockTeamMember extends Partial<TeamMemberResponse> {
   id: string;
   name: string;
@@ -41,11 +32,10 @@ export interface MockTeamMember extends Partial<TeamMemberResponse> {
   image: string;
 }
 
-// Helper functions to safely access mock or real data
 export function getQuizImage(
   quiz: QuizResponse | MockQuiz
 ): string | undefined {
-  return (quiz as any).image; // Only mock data has image field
+  return (quiz as any).image;
 }
 
 export function getQuizDuration(quiz: QuizResponse | MockQuiz): string {
@@ -65,5 +55,5 @@ export function getQuestionAnswer(
 export function getQuestionStatus(
   question: QuestionResponse | MockQuestion
 ): string {
-  return (question as any).status || "Active"; // Default to Active for backend data
+  return (question as any).status || "Active";
 }

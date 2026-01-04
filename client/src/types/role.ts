@@ -1,10 +1,3 @@
-/**
- * Role Management Types
- */
-
-/**
- * Search/Filter params
- */
 export interface RoleSearchParams {
   name?: string;
   page?: number;
@@ -12,7 +5,4 @@ export interface RoleSearchParams {
   sort?: string;
 }
 
-/**
- * Default pagination
- */
 export const ROLE_DEFAULT_PAGE_SIZE = 10;

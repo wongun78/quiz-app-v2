@@ -53,7 +53,7 @@ export interface UserResponse {
   dateOfBirth?: string;
   phoneNumber?: string;
   active: boolean;
-  roles: string[]; // RoleEnum values
+  roles: string[];
 }
 
 export interface UserRequest {
@@ -68,21 +68,9 @@ export interface UserRequest {
   roleIds?: string[];
 }
 
-export interface UserUpdateRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  username: string;
-  password?: string; // Optional for update
-  dateOfBirth?: string;
-  phoneNumber?: string;
-  active?: boolean;
-  roleIds?: string[];
-}
-
 export interface RoleResponse {
   id: string;
-  name: string; // RoleEnum: "ROLE_ADMIN" | "ROLE_USER"
+  name: string;
   description?: string;
   createdAt: string;
   updatedAt: string;
@@ -90,10 +78,9 @@ export interface RoleResponse {
 }
 
 export interface RoleRequest {
-  name: string; // RoleEnum: "ROLE_ADMIN" | "ROLE_USER"
+  name: string;
   description?: string;
 }
-// Basic quiz info (list view)
 export interface QuizResponse {
   id: string;
   title: string;
@@ -103,7 +90,6 @@ export interface QuizResponse {
   totalQuestions: number;
 }
 
-// Detailed quiz with questions (detail view)
 export interface QuizDetailResponse {
   id: string;
   title: string;
@@ -150,7 +136,7 @@ export interface AnswerResponse {
 }
 
 export interface AnswerRequest {
-  id?: string; // Optional, only for update
+  id?: string;
   content: string;
   isCorrect: boolean;
 }
@@ -171,13 +157,6 @@ export interface ExamResultResponse {
   passed: boolean;
 }
 
-export interface SearchParams {
-  query?: string;
-  page?: number;
-  size?: number;
-  sort?: string;
-}
-
 export interface PaginationParams {
   page?: number;
   size?: number;
@@ -189,20 +168,6 @@ export interface LoginFormData {
   password: string;
 }
 
-export interface RegisterFormData {
-  firstName: string;
-  lastName: string;
-  eullword: string;
-  confirmPassword: string;
-}
-
-export interface ContactFormData {
-  name: string;
-  email: string;
-  message: string;
-}
-
-// Team member type (for About page - not backend API)
 export interface TeamMemberResponse {
   id: string;
   name: string;
@@ -212,21 +177,3 @@ export interface TeamMemberResponse {
   github?: string;
   linkedin?: string;
 }
-mail: string;
-pass;
-
-export interface LoadingState {
-  isLoading: boolean;
-  error: string | null;
-}
-
-export interface AuthState {
-  user: UserResponse | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export type Nullable<T> = T | null;
-export type Optional<T> = T | undefined;
-export type AsyncResult<T> = Promise<T>;
