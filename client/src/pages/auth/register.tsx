@@ -10,7 +10,7 @@ import {
   CardLogin,
   CardTitle,
 } from "@/components/ui/card";
-import bg from "@/assets/images/bg.png";
+import bg from "@/assets/images/bg.jpg";
 import { registerSchema, type RegisterFormData } from "@/validations";
 import { useAuth } from "@/contexts";
 import { ROUTES } from "@/config/constants";
@@ -29,11 +29,10 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      // RegisterFormData includes confirmPassword, but backend needs RegisterRequest
       await registerUser(data);
       navigate(ROUTES.HOME);
     } catch (error) {
-      // Error is handled by AuthContext (toast)
+      console.error("Registration failed:", error);
     }
   };
 
@@ -53,7 +52,6 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* First Name & Last Name - Same Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Label htmlFor="firstName">First Name</Label>
@@ -86,7 +84,6 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Email Address */}
               <div className="space-y-1">
                 <Label htmlFor="email">Email Address</Label>
                 <Input
@@ -101,7 +98,6 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Username & Phone Number - Same Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Label htmlFor="username">Username</Label>
@@ -136,7 +132,6 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="space-y-1">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -153,7 +148,6 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Confirm Password */}
               <div className="space-y-1">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input

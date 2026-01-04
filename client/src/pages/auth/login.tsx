@@ -10,7 +10,7 @@ import {
   CardLogin,
   CardTitle,
 } from "@/components/ui/card";
-import bg from "@/assets/images/bg.png";
+import bg from "@/assets/images/bg.jpg";
 import { loginSchema, type LoginFormData } from "@/validations";
 import { useAuth } from "@/contexts";
 import { ROUTES } from "@/config/constants";
@@ -32,9 +32,9 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data);
-      navigate(returnUrl);
+      navigate(returnUrl, { replace: true });
     } catch (error) {
-      // Error is handled by AuthContext (toast)
+      console.error("Login failed:", error);
     }
   };
 
