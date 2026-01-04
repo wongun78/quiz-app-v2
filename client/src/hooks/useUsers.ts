@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "@/services";
 import type { UserResponse, PageResponse } from "@/types/backend";
 import { toast } from "react-toastify";
@@ -8,103 +8,105 @@ interface UseUsersOptions {
   active?: boolean;
   page?: number;
   size?: number;
-  autoFetch?: boolean;
 }
 
-interface UseUsersReturn {
-  users: UserResponse[];
-  isLoading: boolean;
-  error: string | null;
-  totalPages: number;
-  totalElements: number;
-  refetch: () => Promise<void>;
-}
+export const useUsers = (options: UseUsersOptions = {}) => {
+  const { fullName, active, page = 0, size = 10 } = options;
 
-/**
- * Custom hook for fetching users with search/filter
- * Usage: const { users, isLoading, error, refetch } = useUsers({ fullName: "Admin", page: 0, size: 10 });
- */
-export const useUsers = (options: UseUsersOptions = {}): UseUsersReturn => {
-  const { fullName, active, page = 0, size = 10, autoFetch = true } = options;
+  return useQuery({
+    queryKey: ["users", { fullName, active, page, size }],
+    queryFn: async () => {
+      try {
+        let response: PageResponse<UserResponse>;
 
-  const [users, setUsers] = useState<UserResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
+        if (fullName !== undefined || active !== undefined) {
+          response = await userService.search(fullName, active, { page, size });
+        } else {
+          response = await userService.getAll({ page, size });
+        }
 
-  const fetchUsers = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      let response: PageResponse<UserResponse>;
-
-      // Use search endpoint if filters are provided
-      if (fullName !== undefined || active !== undefined) {
-        response = await userService.search(fullName, active, { page, size });
-      } else {
-        response = await userService.getAll({ page, size });
+        return response;
+      } catch (err: any) {
+        const errorMessage =
+          err?.response?.data?.message || "Failed to fetch users";
+        toast.error(errorMessage);
+        throw err;
       }
-
-      setUsers(response.content);
-      setTotalPages(response.totalPages);
-      setTotalElements(response.totalElements);
-    } catch (err: any) {
-      const errorMessage =
-        err?.response?.data?.message || "Failed to fetch users";
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (autoFetch) {
-      fetchUsers();
-    }
-  }, [fullName, active, page, size, autoFetch]);
-
-  return {
-    users,
-    isLoading,
-    error,
-    totalPages,
-    totalElements,
-    refetch: fetchUsers,
-  };
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 };
 
-/**
- * Custom hook for fetching single user
- */
 export const useUser = (id: string | undefined) => {
-  const [user, setUser] = useState<UserResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  return useQuery({
+    queryKey: ["user", id],
+    queryFn: async () => {
+      if (!id) throw new Error("User ID is required");
 
-  const fetchUser = async () => {
-    if (!id) return;
+      try {
+        const response = await userService.getById(id);
+        return response;
+      } catch (err: any) {
+        const errorMessage =
+          err?.response?.data?.message || "Failed to fetch user";
+        toast.error(errorMessage);
+        throw err;
+      }
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
 
-    setIsLoading(true);
-    setError(null);
+export const useCreateUser = () => {
+  const queryClient = useQueryClient();
 
-    try {
-      const response = await userService.getById(id);
-      setUser(response);
-    } catch (err: any) {
+  return useMutation({
+    mutationFn: (data: any) => userService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User created successfully!");
+    },
+    onError: (err: any) => {
       const errorMessage =
-        err?.response?.data?.message || "Failed to fetch user";
-      setError(errorMessage);
+        err?.response?.data?.message || "Failed to create user";
       toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
+};
 
-  useEffect(() => {
-    fetchUser();
-  }, [id]);
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
 
-  return { user, isLoading, error, refetch: fetchUser };
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      userService.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+      toast.success("User updated successfully!");
+    },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message || "Failed to update user";
+      toast.error(errorMessage);
+    },
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => userService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User deleted successfully!");
+    },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message || "Failed to delete user";
+      toast.error(errorMessage);
+    },
+  });
 };

@@ -1,114 +1,111 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { roleService } from "@/services";
 import type { RoleResponse, PageResponse } from "@/types/backend";
-import type { RoleSearchParams } from "@/types/role";
 import { toast } from "react-toastify";
 
-interface UseRolesOptions extends RoleSearchParams {
-  autoFetch?: boolean;
+interface UseRolesOptions {
+  name?: string;
+  page?: number;
+  size?: number;
 }
 
-interface UseRolesReturn {
-  roles: RoleResponse[];
-  isLoading: boolean;
-  error: string | null;
-  totalPages: number;
-  totalElements: number;
-  refetch: () => Promise<void>;
-}
+export const useRoles = (options: UseRolesOptions = {}) => {
+  const { name, page = 0, size = 10 } = options;
 
-/**
- * Custom hook for fetching roles with search/filter
- * Usage: const { roles, isLoading, error, refetch } = useRoles({ name: "ROLE_ADMIN", page: 0, size: 10 });
- */
-export const useRoles = (options: UseRolesOptions = {}): UseRolesReturn => {
-  const { name, page = 0, size = 10, autoFetch = true } = options;
+  return useQuery({
+    queryKey: ["roles", { name, page, size }],
+    queryFn: async () => {
+      try {
+        let response: PageResponse<RoleResponse>;
 
-  const [roles, setRoles] = useState<RoleResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
+        if (name) {
+          response = await roleService.search(name, { page, size });
+        } else {
+          response = await roleService.getAll({ page, size });
+        }
 
-  const fetchRoles = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      let response: PageResponse<RoleResponse>;
-
-      // Use search endpoint if name filter is provided
-      if (name) {
-        response = await roleService.search(name, { page, size });
-      } else {
-        response = await roleService.getAll({ page, size });
+        return response;
+      } catch (err: any) {
+        const errorMessage =
+          err?.response?.data?.message || "Failed to fetch roles";
+        toast.error(errorMessage);
+        throw err;
       }
-
-      setRoles(response.content);
-      setTotalPages(response.totalPages);
-      setTotalElements(response.totalElements);
-    } catch (err: any) {
-      const errorMessage =
-        err?.response?.data?.message || "Failed to fetch roles";
-      setError(errorMessage);
-      // Don't show toast here - let the component decide whether to show error
-      // toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (autoFetch) {
-      fetchRoles();
-    }
-  }, [name, page, size, autoFetch]);
-
-  return {
-    roles,
-    isLoading,
-    error,
-    totalPages,
-    totalElements,
-    refetch: fetchRoles,
-  };
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 };
 
-/**
- * Custom hook for fetching single role
- */
 export const useRole = (id: string | undefined) => {
-  const [role, setRole] = useState<RoleResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  return useQuery({
+    queryKey: ["role", id],
+    queryFn: async () => {
+      if (!id) throw new Error("Role ID is required");
 
-  const fetchRole = async () => {
-    if (!id) return;
+      try {
+        const response = await roleService.getById(id);
+        return response;
+      } catch (err: any) {
+        const errorMessage =
+          err?.response?.data?.message || "Failed to fetch role";
+        toast.error(errorMessage);
+        throw err;
+      }
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
 
-    setIsLoading(true);
-    setError(null);
+export const useCreateRole = () => {
+  const queryClient = useQueryClient();
 
-    try {
-      const response = await roleService.getById(id);
-      setRole(response);
-    } catch (err: any) {
+  return useMutation({
+    mutationFn: (data: any) => roleService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
+      toast.success("Role created successfully!");
+    },
+    onError: (err: any) => {
       const errorMessage =
-        err?.response?.data?.message || "Failed to fetch role";
-      setError(errorMessage);
+        err?.response?.data?.message || "Failed to create role";
       toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
+};
 
-  useEffect(() => {
-    fetchRole();
-  }, [id]);
+export const useUpdateRole = () => {
+  const queryClient = useQueryClient();
 
-  return {
-    role,
-    isLoading,
-    error,
-    refetch: fetchRole,
-  };
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      roleService.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
+      queryClient.invalidateQueries({ queryKey: ["role", variables.id] });
+      toast.success("Role updated successfully!");
+    },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message || "Failed to update role";
+      toast.error(errorMessage);
+    },
+  });
+};
+
+export const useDeleteRole = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => roleService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
+      toast.success("Role deleted successfully!");
+    },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message || "Failed to delete role";
+      toast.error(errorMessage);
+    },
+  });
 };
