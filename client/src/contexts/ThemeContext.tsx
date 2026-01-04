@@ -11,91 +11,63 @@ type Theme = "light" | "dark" | "system";
 
 interface ThemeContextValue {
   theme: Theme;
-  effectiveTheme: "light" | "dark"; // The actual theme being applied
+  effectiveTheme: "light" | "dark";
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-/**
- * Theme Provider Component
- * Manages dark/light theme state with localStorage persistence
- * Supports system preference detection
- */
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const stored = localStorage.getItem("theme") as Theme;
-    return stored || "system";
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (globalThis.window !== undefined) {
+      return (localStorage.getItem("theme") as Theme) || "system";
+    }
+    return "system";
   });
 
-  const [effectiveTheme, setEffectiveTheme] = useState<"light" | "dark">(() => {
-    if (theme === "system") {
-      return globalThis.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-    }
-    return theme;
-  });
+  const [effectiveTheme, setEffectiveTheme] = useState<"light" | "dark">(
+    "light"
+  );
 
   useEffect(() => {
     const root = globalThis.document.documentElement;
-
-    // Remove both classes first
-    root.classList.remove("light", "dark");
-
-    let currentTheme: "light" | "dark";
-
-    if (theme === "system") {
-      const systemTheme = globalThis.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      currentTheme = systemTheme;
-    } else {
-      currentTheme = theme;
-    }
-
-    root.classList.add(currentTheme);
-    setEffectiveTheme(currentTheme);
-  }, [theme]);
-
-  // Listen to system theme changes when in system mode
-  useEffect(() => {
-    if (theme !== "system") return;
-
     const mediaQuery = globalThis.matchMedia("(prefers-color-scheme: dark)");
 
-    const handleChange = (e: MediaQueryListEvent) => {
-      const newTheme = e.matches ? "dark" : "light";
-      const root = globalThis.document.documentElement;
+    const applyTheme = () => {
+      let resolvedTheme: "light" | "dark";
+
+      if (theme === "system") {
+        resolvedTheme = mediaQuery.matches ? "dark" : "light";
+      } else {
+        resolvedTheme = theme;
+      }
+
       root.classList.remove("light", "dark");
-      root.classList.add(newTheme);
-      setEffectiveTheme(newTheme);
+      root.classList.add(resolvedTheme);
+      setEffectiveTheme(resolvedTheme);
     };
 
-    mediaQuery.addEventListener("change", handleChange);
+    applyTheme();
 
-    return () => mediaQuery.removeEventListener("change", handleChange);
+    if (theme === "system") {
+      mediaQuery.addEventListener("change", applyTheme);
+      return () => mediaQuery.removeEventListener("change", applyTheme);
+    }
   }, [theme]);
 
-  const setTheme = (newTheme: Theme) => {
+  const updateTheme = (newTheme: Theme) => {
     localStorage.setItem("theme", newTheme);
-    setThemeState(newTheme);
+    setTheme(newTheme);
   };
 
   const toggleTheme = () => {
-    if (theme === "system") {
-      // If system, toggle to opposite of current effective theme
-      setTheme(effectiveTheme === "dark" ? "light" : "dark");
-    } else {
-      // Toggle between light and dark
-      setTheme(theme === "dark" ? "light" : "dark");
-    }
+    const nextTheme = effectiveTheme === "dark" ? "light" : "dark";
+    updateTheme(nextTheme);
   };
 
   const contextValue = useMemo(
-    () => ({ theme, effectiveTheme, setTheme, toggleTheme }),
+    () => ({ theme, effectiveTheme, setTheme: updateTheme, toggleTheme }),
     [theme, effectiveTheme]
   );
 
@@ -106,16 +78,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-/**
- * Hook to access theme context
- * @throws Error if used outside ThemeProvider
- */
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-
   if (!context) {
     throw new Error("useTheme must be used within ThemeProvider");
   }
-
   return context;
 };

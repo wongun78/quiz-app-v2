@@ -4,6 +4,7 @@ import {
   useReducer,
   useEffect,
   useMemo,
+  useCallback,
   type ReactNode,
 } from "react";
 import { authService } from "@/services";
@@ -14,10 +15,6 @@ import type {
   RegisterRequest,
 } from "@/types/backend";
 import { toast } from "react-toastify";
-
-// ===========================
-// Types & Interfaces
-// ===========================
 
 interface AuthState {
   user: UserResponse | null;
@@ -37,10 +34,6 @@ interface AuthContextValue extends AuthState {
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
 }
-
-// ===========================
-// Reducer
-// ===========================
 
 const initialUnauthenticatedState = {
   user: null,
@@ -69,15 +62,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// ===========================
-// Context Creation
-// ===========================
-
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-// ===========================
-// Provider Component
-// ===========================
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, {
@@ -86,7 +71,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading: true,
   });
 
-  // Auto-fetch user on mount if token exists
+  const refetchUser = useCallback(async () => {
+    dispatch({ type: "AUTH_START" });
+    try {
+      const user = await authService.getCurrentUser();
+      dispatch({ type: "AUTH_SUCCESS", payload: user });
+    } catch (error: any) {
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        dispatch({ type: "AUTH_FAILURE" });
+      } else {
+        dispatch({ type: "AUTH_FAILURE" });
+      }
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout API failed", error);
+    } finally {
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      dispatch({ type: "LOGOUT" });
+      toast.info("Logged out successfully");
+    }
+  }, []);
+
+  const login = useCallback(async (data: LoginRequest) => {
+    dispatch({ type: "AUTH_START" });
+    try {
+      const response = await authService.login(data);
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.token);
+      dispatch({ type: "AUTH_SUCCESS", payload: response.user });
+      toast.success("Login successful!");
+    } catch (error: any) {
+      dispatch({ type: "AUTH_FAILURE" });
+      const msg = error?.response?.data?.message || "Login failed";
+      toast.error(msg);
+      throw error;
+    }
+  }, []);
+
+  const register = useCallback(async (data: RegisterRequest) => {
+    dispatch({ type: "AUTH_START" });
+    try {
+      const response = await authService.register(data);
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.token);
+      dispatch({ type: "AUTH_SUCCESS", payload: response.user });
+      toast.success("Registration successful!");
+    } catch (error: any) {
+      dispatch({ type: "AUTH_FAILURE" });
+      const msg = error?.response?.data?.message || "Registration failed";
+      toast.error(msg);
+      throw error;
+    }
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     if (token) {
@@ -94,110 +135,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       dispatch({ type: "AUTH_FAILURE" });
     }
-  }, []);
+  }, [refetchUser]);
 
-  // Listen to logout events from axios interceptor
   useEffect(() => {
     const handleAuthLogout = () => {
-      dispatch({ type: "LOGOUT" });
+      logout();
       toast.info("Session expired. Please login again.");
     };
 
     globalThis.addEventListener("auth:logout", handleAuthLogout);
     return () =>
       globalThis.removeEventListener("auth:logout", handleAuthLogout);
-  }, []);
-
-  /**
-   * Login user
-   */
-  const login = async (data: LoginRequest): Promise<void> => {
-    dispatch({ type: "AUTH_START" });
-
-    try {
-      const response = await authService.login(data);
-
-      // Save token
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.token);
-
-      // Save user info
-      dispatch({ type: "AUTH_SUCCESS", payload: response.user });
-
-      toast.success("Login successful!");
-    } catch (error: any) {
-      dispatch({ type: "AUTH_FAILURE" });
-
-      const errorMessage = error?.response?.data?.message || "Login failed";
-      toast.error(errorMessage);
-
-      throw error;
-    }
-  };
-
-  /**
-   * Register new user
-   */
-  const register = async (data: RegisterRequest): Promise<void> => {
-    dispatch({ type: "AUTH_START" });
-
-    try {
-      const response = await authService.register(data);
-
-      // Save token
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.token);
-
-      // Save user info
-      dispatch({ type: "AUTH_SUCCESS", payload: response.user });
-
-      toast.success("Registration successful!");
-    } catch (error: any) {
-      dispatch({ type: "AUTH_FAILURE" });
-
-      const errorMessage =
-        error?.response?.data?.message || "Registration failed";
-      toast.error(errorMessage);
-
-      throw error;
-    }
-  };
-
-  /**
-   * Logout user
-   */
-  const logout = async (): Promise<void> => {
-    try {
-      await authService.logout();
-      dispatch({ type: "LOGOUT" });
-      toast.success("Logged out successfully");
-    } catch (_error) {
-      // Even if API call fails, clear local state
-      dispatch({ type: "LOGOUT" });
-      toast.info("Logged out locally");
-    }
-  };
-
-  /**
-   * Refetch current user
-   */
-  const refetchUser = async (): Promise<void> => {
-    dispatch({ type: "AUTH_START" });
-
-    try {
-      const user = await authService.getCurrentUser();
-      dispatch({ type: "AUTH_SUCCESS", payload: user });
-    } catch (error: any) {
-      // Only logout if it's 401/403 (authentication issue)
-      // Don't logout on network errors or 500
-      const status = error?.response?.status;
-      if (status === 401 || status === 403) {
-        dispatch({ type: "AUTH_FAILURE" });
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      } else {
-        // For other errors, keep the user logged in but set loading to false
-        dispatch({ type: "AUTH_FAILURE" });
-      }
-    }
-  };
+  }, [logout]);
 
   const contextValue = useMemo(
     () => ({
@@ -207,7 +156,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout,
       refetchUser,
     }),
-    [state]
+    [state, login, register, logout, refetchUser]
   );
 
   return (
@@ -215,20 +164,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// ===========================
-// Custom Hook
-// ===========================
-
-/**
- * useAuth Hook
- * Access auth context from any component
- */
 export const useAuth = (): AuthContextValue => {
   const context = useContext(AuthContext);
-
   if (!context) {
     throw new Error("useAuth must be used within AuthProvider");
   }
-
   return context;
 };
