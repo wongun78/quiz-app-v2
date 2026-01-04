@@ -2,11 +2,7 @@ import { z } from "zod";
 import { VALIDATION } from "@/config/constants";
 
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Invalid email format")
-    .trim(),
+  email: z.email("Invalid email format").trim(),
 
   password: z.string().min(1, "Password is required"),
 });
@@ -27,11 +23,7 @@ export const registerSchema = z
       .max(50, "Last name must be less than 50 characters")
       .trim(),
 
-    email: z
-      .string()
-      .min(1, "Email is required")
-      .email("Invalid email format")
-      .trim(),
+    email: z.email("Invalid email format").trim(),
 
     username: z
       .string()
