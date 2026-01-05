@@ -13,17 +13,20 @@ const RoleManagementPage = () => {
   const [selectedRole, setSelectedRole] = useState<RoleResponse | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const { roles, isLoading, error, totalPages, totalElements, refetch } =
-    useRoles({
-      name: searchName || undefined,
-      page: currentPage,
-      size: pageSize,
-    });
+  const { data, isLoading, error, refetch } = useRoles({
+    name: searchName || undefined,
+    page: currentPage,
+    size: pageSize,
+  });
+
+  const roles = data?.content || [];
+  const totalPages = data?.totalPages || 0;
+  const totalElements = data?.totalElements || 0;
 
   const handleSearch = (params: { name?: string; status?: boolean }) => {
     setSearchName(params.name || "");
     setActiveOnly(params.status || false);
-    setCurrentPage(0); // Reset to first page on search
+    setCurrentPage(0);
   };
 
   const handleClearSearch = () => {
@@ -48,11 +51,12 @@ const RoleManagementPage = () => {
   };
 
   const handleFormSuccess = () => {
-    refetch();
+    if (!selectedRole) {
+      setCurrentPage(0);
+    }
     handleFormClose();
   };
 
-  // Filter roles by active status on client side
   const filteredRoles = activeOnly
     ? roles.filter((role) => !role.isDeleted)
     : roles;
@@ -67,7 +71,7 @@ const RoleManagementPage = () => {
       <RoleTable
         roles={filteredRoles}
         isLoading={isLoading}
-        error={error}
+        error={error ? String(error) : null}
         currentPage={currentPage}
         pageSize={pageSize}
         totalPages={totalPages}
@@ -75,7 +79,7 @@ const RoleManagementPage = () => {
         onPageChange={setCurrentPage}
         onPageSizeChange={setPageSize}
         onEdit={handleEdit}
-        onRefetch={refetch}
+        onDelete={refetch}
       />
       {isFormOpen && (
         <RoleForm

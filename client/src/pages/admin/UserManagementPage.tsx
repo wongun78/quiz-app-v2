@@ -13,18 +13,21 @@ const UserManagementPage = () => {
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const { users, isLoading, error, totalPages, totalElements, refetch } =
-    useUsers({
-      fullName: searchFullName || undefined,
-      active: activeOnly ? true : undefined,
-      page: currentPage,
-      size: pageSize,
-    });
+  const { data, isLoading, error, refetch } = useUsers({
+    fullName: searchFullName || undefined,
+    active: activeOnly ? true : undefined,
+    page: currentPage,
+    size: pageSize,
+  });
+
+  const users = data?.content || [];
+  const totalPages = data?.totalPages || 0;
+  const totalElements = data?.totalElements || 0;
 
   const handleSearch = (params: { fullName?: string; active?: boolean }) => {
     setSearchFullName(params.fullName || "");
     setActiveOnly(params.active || false);
-    setCurrentPage(0); // Reset to first page on search
+    setCurrentPage(0);
   };
 
   const handleClearSearch = () => {
@@ -49,7 +52,9 @@ const UserManagementPage = () => {
   };
 
   const handleFormSuccess = () => {
-    refetch();
+    if (!selectedUser) {
+      setCurrentPage(0);
+    }
     handleFormClose();
   };
 
@@ -63,7 +68,7 @@ const UserManagementPage = () => {
       <UserTable
         users={users}
         isLoading={isLoading}
-        error={error}
+        error={error ? String(error) : null}
         currentPage={currentPage}
         pageSize={pageSize}
         totalPages={totalPages}
@@ -71,7 +76,7 @@ const UserManagementPage = () => {
         onPageChange={setCurrentPage}
         onPageSizeChange={setPageSize}
         onEdit={handleEdit}
-        onRefetch={refetch}
+        onDelete={refetch}
       />
       {isFormOpen && (
         <UserForm

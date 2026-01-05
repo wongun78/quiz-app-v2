@@ -1,67 +1,158 @@
+import { useState } from "react";
 import QuestionSearchFilter from "@/components/admin/question/question-search-filter";
 import QuestionTable from "@/components/admin/question/question-table";
 import QuestionForm from "@/components/admin/question/question-form";
 import AnswerTable from "@/components/admin/question/answer-table";
 import AnswerForm from "@/components/admin/question/answer-form";
-
-const QUESTIONS = [
-  {
-    id: 1,
-    content: "Who is the inventor of the airplane?",
-    type: "MultipleChoice",
-    answers: 4,
-    status: "Yes",
-  },
-  {
-    id: 2,
-    content: "Who is the inventor of the World Wide Web?",
-    type: "MultipleChoice",
-    answers: 4,
-    status: "Yes",
-  },
-  {
-    id: 3,
-    content: "Where is Viet Nam?",
-    type: "MultipleChoice",
-    answers: 4,
-    status: "Yes",
-  },
-  {
-    id: 4,
-    content: "What is the capital of France?",
-    type: "SingleChoice",
-    answers: 4,
-    status: "cell",
-  },
-  {
-    id: 5,
-    content: "Who is the inventor of the alternating current?",
-    type: "MultipleChoice",
-    answers: 4,
-    status: "cell",
-  },
-];
-
-const ANSWERS = [
-  { id: 1, content: "Wright brothers", isCorrect: "True", status: "Yes" },
-  {
-    id: 2,
-    content: "Alexander Graham Bell",
-    isCorrect: "False",
-    status: "Yes",
-  },
-  { id: 3, content: "Albert Einstein", isCorrect: "False", status: "Yes" },
-  { id: 4, content: "Charles Babbage", isCorrect: "False", status: "cell" },
-];
+import { useQuestions } from "@/hooks";
+import type { QuestionResponse } from "@/types/backend";
+import type { AnswerFormData } from "@/validations";
 
 const QuestionManagementPage = () => {
+  const [searchContent, setSearchContent] = useState<string>("");
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [selectedQuestion, setSelectedQuestion] =
+    useState<QuestionResponse | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(
+    null
+  );
+  const [currentAnswers, setCurrentAnswers] = useState<AnswerFormData[]>([]);
+
+  const { data, isLoading, error, refetch } = useQuestions({
+    content: searchContent || undefined,
+    type: selectedType || undefined,
+    page: currentPage,
+    size: pageSize,
+  });
+
+  const questions = data?.content || [];
+  const totalPages = data?.totalPages || 0;
+  const totalElements = data?.totalElements || 0;
+
+  const handleSearch = (params: { content?: string; type?: string }) => {
+    setSearchContent(params.content || "");
+    setSelectedType(params.type || "");
+    setCurrentPage(0);
+  };
+
+  const handleClearSearch = () => {
+    setSearchContent("");
+    setSelectedType("");
+    setCurrentPage(0);
+  };
+
+  const handleCreate = () => {
+    setSelectedQuestion(null);
+    setCurrentAnswers([]);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (question: QuestionResponse) => {
+    setSelectedQuestion(question);
+    setCurrentAnswers(
+      question.answers?.map((a) => ({
+        id: a.id,
+        content: a.content,
+        isCorrect: a.isCorrect,
+        active: true,
+      })) || []
+    );
+    setIsFormOpen(true);
+  };
+
+  const handleFormClose = () => {
+    setSelectedQuestion(null);
+    setCurrentAnswers([]);
+    setIsFormOpen(false);
+  };
+
+  const handleFormSuccess = () => {
+    if (!selectedQuestion) {
+      setCurrentPage(0);
+    }
+    handleFormClose();
+  };
+
+  const handleAddAnswer = () => {
+    setSelectedAnswerIndex(null);
+  };
+
+  const handleEditAnswer = (index: number) => {
+    setSelectedAnswerIndex(index);
+  };
+
+  const handleDeleteAnswer = (index: number) => {
+    setCurrentAnswers((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSaveAnswer = (data: AnswerFormData) => {
+    if (selectedAnswerIndex === null) {
+      setCurrentAnswers((prev) => [
+        ...prev,
+        { ...data, id: crypto.randomUUID() },
+      ]);
+    } else {
+      setCurrentAnswers((prev) =>
+        prev.map((ans, i) =>
+          i === selectedAnswerIndex ? { ...data, id: ans.id } : ans
+        )
+      );
+    }
+    setSelectedAnswerIndex(null);
+  };
+
+  const handleCancelAnswer = () => {
+    setSelectedAnswerIndex(null);
+  };
+
   return (
     <div className="space-y-4">
-      <QuestionSearchFilter />
-      <QuestionTable questions={QUESTIONS} />
-      <QuestionForm />
-      <AnswerTable answers={ANSWERS} />
-      <AnswerForm />
+      <QuestionSearchFilter
+        onSearch={handleSearch}
+        onClear={handleClearSearch}
+        onCreate={handleCreate}
+      />
+      <QuestionTable
+        questions={questions}
+        isLoading={isLoading}
+        error={error ? String(error) : null}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={setPageSize}
+        onEdit={handleEdit}
+        onDelete={refetch}
+      />
+      {isFormOpen && (
+        <>
+          <QuestionForm
+            question={selectedQuestion}
+            answers={currentAnswers}
+            onClose={handleFormClose}
+            onSuccess={handleFormSuccess}
+          />
+          <AnswerTable
+            answers={currentAnswers}
+            onEdit={handleEditAnswer}
+            onDelete={handleDeleteAnswer}
+            onAdd={handleAddAnswer}
+          />
+          <AnswerForm
+            answer={
+              selectedAnswerIndex === null
+                ? null
+                : currentAnswers[selectedAnswerIndex]
+            }
+            onSave={handleSaveAnswer}
+            onCancel={handleCancelAnswer}
+          />
+        </>
+      )}
     </div>
   );
 };
