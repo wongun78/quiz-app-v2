@@ -56,6 +56,11 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/quizzes" element={<QuizPage />} />
+            <Route path="/exam/:quizId" element={<ExamPage />} />
+            <Route
+              path="/exam/result/:submissionId"
+              element={<ExamResultPage />}
+            />
           </Route>
 
           {/* ADMIN ROUTES */}
@@ -102,11 +107,6 @@ function App() {
           <Route path="/403" element={<ForbiddenPage />} />
 
           {/* EXAM ROUTES */}
-          <Route path="/exam/:quizId" element={<ExamPage />} />
-          <Route
-            path="/exam/result/:submissionId"
-            element={<ExamResultPage />}
-          />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

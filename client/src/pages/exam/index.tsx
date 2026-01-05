@@ -156,55 +156,65 @@ const ExamPage = () => {
 
   if (quizError || !quiz) {
     return (
-      <div className="container-custom py-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-4">
+      <section className="container-custom py-12">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <h1 className="text-3xl font-bold text-destructive">
             Quiz Not Found
           </h1>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground text-lg">
             The quiz you're looking for doesn't exist or is not available.
           </p>
-          <Button onClick={() => navigate(ROUTES.QUIZZES)}>
+          <Button
+            onClick={() => navigate(ROUTES.QUIZZES)}
+            size="lg"
+            className="cursor-pointer"
+          >
             Back to Quizzes
           </Button>
         </div>
-      </div>
+      </section>
     );
   }
 
   if (!quiz.active) {
     return (
-      <div className="container-custom py-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-4">
+      <section className="container-custom py-12">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <h1 className="text-3xl font-bold text-destructive">
             Quiz Not Available
           </h1>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground text-lg">
             This quiz is currently inactive and cannot be taken.
           </p>
-          <Button onClick={() => navigate(ROUTES.QUIZZES)}>
+          <Button
+            onClick={() => navigate(ROUTES.QUIZZES)}
+            size="lg"
+            className="cursor-pointer"
+          >
             Back to Quizzes
           </Button>
         </div>
-      </div>
+      </section>
     );
   }
 
   if (!quiz.questions || quiz.questions.length === 0) {
     return (
-      <div className="container-custom py-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-4">
-            No Questions
-          </h1>
-          <p className="text-muted-foreground mb-6">
+      <section className="container-custom py-12">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <h1 className="text-3xl font-bold text-destructive">No Questions</h1>
+          <p className="text-muted-foreground text-lg">
             This quiz doesn't have any questions yet.
           </p>
-          <Button onClick={() => navigate(ROUTES.QUIZZES)}>
+          <Button
+            onClick={() => navigate(ROUTES.QUIZZES)}
+            size="lg"
+            className="cursor-pointer"
+          >
             Back to Quizzes
           </Button>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -212,19 +222,19 @@ const ExamPage = () => {
     quiz.questions[currentQuestionIndex];
 
   return (
-    <div className="container-custom py-8">
-      <div className="max-w-4xl mx-auto">
+    <section className="container-custom py-12">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">{quiz.title}</h1>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-3">{quiz.title}</h1>
           {quiz.description && (
-            <p className="text-muted-foreground mb-4">{quiz.description}</p>
+            <p className="text-muted-foreground text-lg mb-4">
+              {quiz.description}
+            </p>
           )}
-          <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="px-4 py-1">
-              Duration: {quiz.durationMinutes} minutes
-            </Badge>
-          </div>
+          <Badge variant="secondary" className="text-sm px-4 py-1.5">
+            Duration: {quiz.durationMinutes} minutes
+          </Badge>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -336,6 +346,8 @@ const ExamPage = () => {
                   variant="outline"
                   onClick={handlePrevQuestion}
                   disabled={currentQuestionIndex === 0}
+                  size="lg"
+                  className="cursor-pointer"
                 >
                   ← Previous
                 </Button>
@@ -344,14 +356,21 @@ const ExamPage = () => {
                     <Button
                       onClick={() => handleSubmitExam(false)}
                       disabled={isSubmitting || submitMutation.isPending}
-                      className="bg-green-600 hover:bg-green-700"
+                      size="lg"
+                      className="cursor-pointer"
                     >
                       {isSubmitting || submitMutation.isPending
                         ? "Submitting..."
                         : "Submit Exam"}
                     </Button>
                   ) : (
-                    <Button onClick={handleNextQuestion}>Next →</Button>
+                    <Button
+                      onClick={handleNextQuestion}
+                      size="lg"
+                      className="cursor-pointer"
+                    >
+                      Next →
+                    </Button>
                   )}
                 </div>
               </CardFooter>
@@ -359,7 +378,7 @@ const ExamPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

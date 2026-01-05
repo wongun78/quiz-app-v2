@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/contexts";
 import { usePermission } from "@/hooks";
 import { Authorize } from "@/components/auth";
@@ -87,6 +88,9 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-4">
+          {/* Theme Toggle */}
+          <ThemeToggle variant="icon" />
+
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
