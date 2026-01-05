@@ -1,11 +1,11 @@
 import TeamCard from "@/components/team/team-card";
-import type { Team } from "@/types/team";
+import type { MockTeamMember } from "@/types/mock";
 
 import team1Img from "@/assets/images/teams/team-1.png";
 import team2Img from "@/assets/images/teams/team-2.png";
 import team3Img from "@/assets/images/teams/team-3.png";
 
-const featuredTeams: Team[] = [
+const featuredTeams: MockTeamMember[] = [
   {
     id: "1",
     name: "Cong Dinh",

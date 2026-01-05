@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
-import type { Team } from "@/types/team";
+import type { TeamMemberResponse } from "@/types/backend";
+import type { MockTeamMember } from "@/types/mock";
 
 interface TeamCardProps {
-  team: Team;
+  team: TeamMemberResponse | MockTeamMember;
 }
 
 const TeamCard = ({ team }: TeamCardProps) => {

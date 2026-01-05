@@ -1,38 +1,39 @@
 import QuizCard from "@/components/quiz/quiz-card";
-import type { Quiz } from "@/types/quiz";
-
-import quiz1Img from "@/assets/images/quizzes/quiz-1.png";
-import quiz2Img from "@/assets/images/quizzes/quiz-2.png";
-import quiz3Img from "@/assets/images/quizzes/quiz-3.png";
-
-const featuredQuizzes: Quiz[] = [
-  {
-    id: "1",
-    title: "Capitals of Country",
-    description: "Test your knowledge about world capitals.",
-    image: quiz1Img,
-    duration: "15m",
-    status: "active",
-  },
-  {
-    id: "2",
-    title: "Capitals of Country",
-    description: "Test your knowledge about world capitals.",
-    image: quiz2Img,
-    duration: "15m",
-    status: "active",
-  },
-  {
-    id: "3",
-    title: "Capitals of Country",
-    description: "Test your knowledge about world capitals.",
-    image: quiz3Img,
-    duration: "15m",
-    status: "active",
-  },
-];
+import { useQuizzes } from "@/hooks/useQuiz";
+import quiz1Img from "@/assets/images/quizzes/quiz-1.jpg";
 
 const FeaturedQuizzes = () => {
+  const { data, isLoading } = useQuizzes({ active: true, page: 0, size: 3 });
+
+  const quizzes = data?.content || [];
+
+  const quizzesWithImage = quizzes.map((quiz) => ({
+    ...quiz,
+    image: quiz1Img,
+  }));
+
+  if (isLoading) {
+    return (
+      <section className="py-12">
+        <div className="container-custom">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mt-2">
+              QUIZZES
+            </h2>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex-1 h-96 bg-muted animate-pulse rounded-lg"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-12">
       <div className="container-custom">
@@ -42,13 +43,19 @@ const FeaturedQuizzes = () => {
           </h2>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4">
-          {featuredQuizzes.map((quiz) => (
-            <div key={quiz.id} className="flex-1">
-              <QuizCard quiz={quiz} />
-            </div>
-          ))}
-        </div>
+        {quizzesWithImage.length === 0 ? (
+          <div className="text-center text-muted-foreground">
+            No quizzes available at the moment.
+          </div>
+        ) : (
+          <div className="flex flex-col md:flex-row gap-4">
+            {quizzesWithImage.map((quiz) => (
+              <div key={quiz.id} className="flex-1">
+                <QuizCard quiz={quiz} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

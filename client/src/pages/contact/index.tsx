@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-
 import { FaTiktok, FaFacebook, FaYoutube, FaLinkedin } from "react-icons/fa";
-import { MdEmail, MdPhone, MdLocationOn } from "react-icons/md";
+import { SOCIAL_LINKS } from "@/config/constants";
+import ContactInfo from "@/components/shared/ContactInfo";
 
 const ContactPage = () => {
   return (
@@ -60,49 +60,31 @@ const ContactPage = () => {
               </p>
             </div>
 
-            <ul className="space-y-4 text-sm text-foreground/80">
-              <li className="flex items-center gap-3">
-                <MdEmail className="text-xl text-primary" />
-                <a
-                  href="mailto:kiennt169@fpt.com"
-                  className="hover:text-primary transition-colors"
-                >
-                  kiennt169@fpt.com
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <MdPhone className="text-xl text-primary" />
-                <a
-                  href="tel:+84999888999"
-                  className="hover:text-primary transition-colors"
-                >
-                  +84 999 888 999
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <MdLocationOn className="text-xl text-primary shrink-0" />
-                <a
-                  href="https://maps.google.com/?q=123+Khuong+Dinh,+Thanh+Xuan,+Ha+Noi,+Viet+Nam"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                >
-                  123 Khuong Dinh, Thanh Xuan, Ha Noi, Viet Nam
-                </a>
-              </li>
-            </ul>
+            <ContactInfo className="space-y-4" />
 
             <div className="flex items-center gap-4">
-              <a href="#" className="hover:text-primary transition-colors">
+              <a
+                href={SOCIAL_LINKS.TIKTOK}
+                className="hover:text-primary transition-colors"
+              >
                 <FaTiktok className="text-2xl" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a
+                href={SOCIAL_LINKS.FACEBOOK}
+                className="hover:text-primary transition-colors"
+              >
                 <FaFacebook className="text-2xl" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a
+                href={SOCIAL_LINKS.YOUTUBE}
+                className="hover:text-primary transition-colors"
+              >
                 <FaYoutube className="text-2xl" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a
+                href={SOCIAL_LINKS.LINKEDIN}
+                className="hover:text-primary transition-colors"
+              >
                 <FaLinkedin className="text-2xl" />
               </a>
             </div>
