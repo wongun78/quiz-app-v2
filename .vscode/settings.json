@@ -5,5 +5,6 @@
   "css.customData": [".vscode/tailwind.json"],
   "css.lint.unknownAtRules": "ignore",
   "scss.lint.unknownAtRules": "ignore",
-  "less.lint.unknownAtRules": "ignore"
+  "less.lint.unknownAtRules": "ignore",
+  "spring-boot.ls.problem.application-properties.unknown-property": "IGNORE"
 }

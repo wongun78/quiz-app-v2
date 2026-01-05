@@ -1,0 +1,166 @@
+{
+  "groups": [
+    {
+      "name": "jwt",
+      "type": "java.lang.String",
+      "description": "JWT configuration properties"
+    },
+    {
+      "name": "cookie.refresh-token",
+      "type": "java.lang.String",
+      "description": "Refresh token cookie configuration"
+    },
+    {
+      "name": "exam",
+      "type": "java.lang.String",
+      "description": "Exam configuration properties"
+    },
+    {
+      "name": "api.contact",
+      "type": "java.lang.String",
+      "description": "API contact information"
+    },
+    {
+      "name": "api.server",
+      "type": "java.lang.String",
+      "description": "API server configuration"
+    },
+    {
+      "name": "data.init",
+      "type": "java.lang.String",
+      "description": "Sample data initialization configuration"
+    },
+    {
+      "name": "data.init.admin",
+      "type": "java.lang.String",
+      "description": "Default admin user configuration"
+    },
+    {
+      "name": "data.init.user",
+      "type": "java.lang.String",
+      "description": "Default test user configuration"
+    },
+    {
+      "name": "cors",
+      "type": "java.lang.String",
+      "description": "CORS configuration"
+    }
+  ],
+  "properties": [
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "description": "Secret key for JWT token signing",
+      "defaultValue": "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+    },
+    {
+      "name": "jwt.expiration",
+      "type": "java.lang.Long",
+      "description": "JWT access token expiration time in milliseconds",
+      "defaultValue": 86400000
+    },
+    {
+      "name": "jwt.refresh-expiration",
+      "type": "java.lang.Long",
+      "description": "JWT refresh token expiration time in milliseconds",
+      "defaultValue": 604800000
+    },
+    {
+      "name": "cookie.refresh-token.name",
+      "type": "java.lang.String",
+      "description": "Refresh token cookie name",
+      "defaultValue": "refresh_token"
+    },
+    {
+      "name": "cookie.refresh-token.max-age",
+      "type": "java.lang.Integer",
+      "description": "Refresh token cookie max age in seconds",
+      "defaultValue": 604800
+    },
+    {
+      "name": "exam.pass-percentage",
+      "type": "java.lang.Double",
+      "description": "Minimum percentage required to pass an exam",
+      "defaultValue": 50.0
+    },
+    {
+      "name": "api.contact.name",
+      "type": "java.lang.String",
+      "description": "API contact person name",
+      "defaultValue": "KienNT169"
+    },
+    {
+      "name": "api.contact.email",
+      "type": "java.lang.String",
+      "description": "API contact email",
+      "defaultValue": "kiennt169@fpt.com"
+    },
+    {
+      "name": "api.project.url",
+      "type": "java.lang.String",
+      "description": "API project URL",
+      "defaultValue": "https://github.com/wongun78/quiz-app"
+    },
+    {
+      "name": "api.server.url",
+      "type": "java.lang.String",
+      "description": "API server URL",
+      "defaultValue": "http://localhost:8080"
+    },
+    {
+      "name": "api.server.description",
+      "type": "java.lang.String",
+      "description": "API server description",
+      "defaultValue": "Local Development"
+    },
+    {
+      "name": "data.init.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable sample data initialization on startup",
+      "defaultValue": true
+    },
+    {
+      "name": "data.init.admin.email",
+      "type": "java.lang.String",
+      "description": "Default admin user email",
+      "defaultValue": "admin@quiz.com"
+    },
+    {
+      "name": "data.init.admin.password",
+      "type": "java.lang.String",
+      "description": "Default admin user password",
+      "defaultValue": "Admin@123"
+    },
+    {
+      "name": "data.init.admin.fullname",
+      "type": "java.lang.String",
+      "description": "Default admin user full name",
+      "defaultValue": "Admin User"
+    },
+    {
+      "name": "data.init.user.email",
+      "type": "java.lang.String",
+      "description": "Default test user email",
+      "defaultValue": "user@quiz.com"
+    },
+    {
+      "name": "data.init.user.password",
+      "type": "java.lang.String",
+      "description": "Default test user password",
+      "defaultValue": "User@123"
+    },
+    {
+      "name": "data.init.user.fullname",
+      "type": "java.lang.String",
+      "description": "Default test user full name",
+      "defaultValue": "Test User"
+    },
+    {
+      "name": "cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Comma-separated list of allowed CORS origins",
+      "defaultValue": "http://localhost:5173,http://localhost:3000"
+    }
+  ],
+  "hints": []
+}
