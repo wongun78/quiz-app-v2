@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,8 +14,7 @@ import {
 } from "@/components/ui/card";
 import { FaTimes, FaSave } from "react-icons/fa";
 import { userSchema, type UserFormData } from "@/validations";
-import { userService } from "@/services";
-import { useRoles } from "@/hooks";
+import { useRoles, useCreateUser, useUpdateUser } from "@/hooks";
 import type { UserResponse } from "@/types/backend";
 
 interface UserFormProps {
@@ -27,7 +25,10 @@ interface UserFormProps {
 
 const UserForm = ({ user, onClose, onSuccess }: UserFormProps) => {
   const isEditMode = !!user;
-  const { roles } = useRoles({ autoFetch: true });
+  const { data: rolesData } = useRoles({});
+  const roles = rolesData?.content || [];
+  const createUser = useCreateUser();
+  const updateUser = useUpdateUser();
 
   const {
     register,
@@ -36,7 +37,7 @@ const UserForm = ({ user, onClose, onSuccess }: UserFormProps) => {
     watch,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<UserFormData>({
+  } = useForm({
     resolver: zodResolver(userSchema),
     defaultValues: {
       firstName: user?.firstName || "",
@@ -77,33 +78,38 @@ const UserForm = ({ user, onClose, onSuccess }: UserFormProps) => {
   }, [user, reset, roles]);
 
   const onSubmit = async (data: UserFormData) => {
-    try {
-      // Remove confirmPassword before sending to API
-      const { confirmPassword, ...userData } = data;
+    const { confirmPassword, ...userData } = data;
 
-      // For create mode, if no roles selected, default to ROLE_USER
-      if (!isEditMode && (!userData.roleIds || userData.roleIds.length === 0)) {
-        const userRole = roles.find((r) => r.name === "ROLE_USER");
-        if (userRole) {
-          userData.roleIds = [userRole.id];
+    if (!isEditMode && (!userData.roleIds || userData.roleIds.length === 0)) {
+      const userRole = roles.find((r) => r.name === "ROLE_USER");
+      if (userRole) {
+        userData.roleIds = [userRole.id];
+      }
+    }
+
+    if (isEditMode && user) {
+      const updateData: any = { ...userData };
+      if (!updateData.password) {
+        delete updateData.password;
+      }
+      updateUser.mutate(
+        { id: user.id, data: updateData },
+        {
+          onSuccess: () => {
+            reset();
+            onSuccess();
+            onClose();
+          },
         }
-      }
-
-      if (isEditMode && user) {
-        await userService.update(user.id, userData);
-        toast.success("User updated successfully");
-      } else {
-        await userService.create(userData);
-        toast.success("User created successfully");
-      }
-      reset();
-      onSuccess();
-      onClose();
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        `Failed to ${isEditMode ? "update" : "create"} user`;
-      toast.error(message);
+      );
+    } else {
+      createUser.mutate(userData as any, {
+        onSuccess: () => {
+          reset();
+          onSuccess();
+          onClose();
+        },
+      });
     }
   };
 
@@ -186,11 +192,6 @@ const UserForm = ({ user, onClose, onSuccess }: UserFormProps) => {
                     {errors.email.message}
                   </p>
                 )}
-                {isEditMode && (
-                  <p className="text-xs text-muted-foreground">
-                    Email cannot be changed
-                  </p>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -208,11 +209,6 @@ const UserForm = ({ user, onClose, onSuccess }: UserFormProps) => {
                 {errors.username && (
                   <p className="text-sm text-destructive">
                     {errors.username.message}
-                  </p>
-                )}
-                {isEditMode && (
-                  <p className="text-xs text-muted-foreground">
-                    Username cannot be changed
                   </p>
                 )}
               </div>
@@ -331,15 +327,11 @@ const UserForm = ({ user, onClose, onSuccess }: UserFormProps) => {
                     {errors.roleIds.message}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Select roles for this user. New users are assigned ROLE_USER
-                  by default.
-                </p>
               </div>
             )}
 
             {/* Status Checkbox */}
-            <div className="space-y-2">
+            <div className="space-y-2 pb-6">
               <Label>Status</Label>
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -371,13 +363,12 @@ const UserForm = ({ user, onClose, onSuccess }: UserFormProps) => {
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             <FaSave />
-            {isSubmitting
-              ? isEditMode
-                ? "Updating..."
-                : "Creating..."
-              : isEditMode
-              ? "Update"
-              : "Save"}
+            {(() => {
+              if (isSubmitting) {
+                return isEditMode ? "Updating..." : "Creating...";
+              }
+              return isEditMode ? "Update" : "Save";
+            })()}
           </Button>
         </CardFooter>
       </form>

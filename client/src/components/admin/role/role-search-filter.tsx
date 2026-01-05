@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FaPlus, FaSync, FaSearch } from "react-icons/fa";
+import { Authorize } from "@/components/auth";
 
 interface RoleSearchFilterProps {
   onSearch: (params: { name?: string; status?: boolean }) => void;
@@ -51,7 +52,7 @@ const RoleSearchFilter = ({
             <Input
               id="search-role-name"
               type="text"
-              placeholder="Enter role name to search..."
+              placeholder="Enter role name"
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -59,7 +60,7 @@ const RoleSearchFilter = ({
           </div>
           <div className="space-y-2 flex-1">
             <Label>Status</Label>
-            <div className="flex items-center space-x-2 h-10">
+            <div className="flex items-center space-x-2">
               <Checkbox
                 id="active-only"
                 checked={activeOnly}
@@ -76,9 +77,11 @@ const RoleSearchFilter = ({
         </div>
       </CardContent>
       <CardFooter className="flex flex-col-reverse md:flex-row md:justify-between gap-4 border-t pt-6">
-        <Button onClick={onCreate}>
-          <FaPlus /> Create Role
-        </Button>
+        <Authorize action="create" resource="role">
+          <Button onClick={onCreate}>
+            <FaPlus /> Create
+          </Button>
+        </Authorize>
 
         <div className="flex gap-2">
           <Button

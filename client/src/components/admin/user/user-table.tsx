@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
 import {
   CardContent,
   CardFooter,
@@ -40,6 +41,7 @@ import {
 import { toast } from "react-toastify";
 import type { UserResponse } from "@/types/backend";
 import { userService } from "@/services";
+import { Authorize } from "@/components/auth";
 
 interface UserTableProps {
   users: UserResponse[];
@@ -52,7 +54,7 @@ interface UserTableProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onEdit: (user: UserResponse) => void;
-  onRefetch: () => void;
+  onDelete?: () => void;
 }
 
 const UserTable = ({
@@ -66,24 +68,28 @@ const UserTable = ({
   onPageChange,
   onPageSizeChange,
   onEdit,
-  onRefetch,
+  onDelete,
 }: UserTableProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (user: UserResponse) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete user "${user.fullName || user.email}"?`
-      )
-    ) {
-      return;
-    }
+    const confirmed = await confirmDialog({
+      title: "Delete User",
+      description: `Are you sure you want to delete user "${
+        user.fullName || user.email
+      }"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive",
+    });
+
+    if (!confirmed) return;
 
     setDeletingId(user.id);
     try {
       await userService.delete(user.id);
       toast.success("User deleted successfully");
-      onRefetch();
+      onDelete?.();
     } catch (error: any) {
       const message = error?.response?.data?.message || "Failed to delete user";
       toast.error(message);
@@ -94,7 +100,7 @@ const UserTable = ({
 
   const handlePageSizeChange = (value: string) => {
     onPageSizeChange(Number.parseInt(value, 10));
-    onPageChange(0); // Reset to first page
+    onPageChange(0);
   };
 
   const renderPagination = () => {
@@ -169,83 +175,92 @@ const UserTable = ({
                   Loading users...
                 </TableCell>
               </TableRow>
-            ) : users.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="h-32 text-center text-muted-foreground"
-                >
-                  No users found
-                </TableCell>
-              </TableRow>
             ) : (
-              users.map((user) => (
-                <TableRow key={user.id} className="even:bg-muted/30">
-                  <TableCell className="font-medium pl-6">
-                    {user.fullName || `${user.firstName} ${user.lastName}`}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {user.email}
-                  </TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {user.phoneNumber || "N/A"}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles && user.roles.length > 0 ? (
-                        user.roles.map((role, index) => (
-                          <Badge
-                            key={index}
-                            variant="secondary"
-                            className="text-xs"
+              (() => {
+                if (users.length === 0) {
+                  return (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="h-32 text-center text-muted-foreground"
+                      >
+                        No users found
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+                return users.map((user) => (
+                  <TableRow key={user.id} className="even:bg-muted/30">
+                    <TableCell className="font-medium pl-6">
+                      {user.fullName || `${user.firstName} ${user.lastName}`}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {user.email}
+                    </TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {user.phoneNumber || "N/A"}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles && user.roles.length > 0 ? (
+                          user.roles.map((role) => (
+                            <Badge
+                              key={role}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {role}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground text-sm">
+                            No roles
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          user.active
+                            ? "bg-success/20 text-success border-success/30"
+                            : "bg-destructive/20 text-destructive border-destructive/30"
+                        }
+                      >
+                        {user.active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                      <div className="flex justify-end gap-1">
+                        <Authorize action="edit" resource="user">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                            onClick={() => onEdit(user)}
+                            disabled={deletingId === user.id}
                           >
-                            {role}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground text-sm">
-                          No roles
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        user.active
-                          ? "bg-success/20 text-success border-success/30"
-                          : "bg-destructive/20 text-destructive border-destructive/30"
-                      }
-                    >
-                      {user.active ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right pr-6">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
-                        onClick={() => onEdit(user)}
-                        disabled={deletingId === user.id}
-                      >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(user)}
-                        disabled={deletingId === user.id}
-                      >
-                        {deletingId === user.id ? "..." : <FaTrash />}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                            <FaEdit />
+                          </Button>
+                        </Authorize>
+                        <Authorize action="delete" resource="user">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDelete(user)}
+                            disabled={deletingId === user.id}
+                          >
+                            {deletingId === user.id ? "..." : <FaTrash />}
+                          </Button>
+                        </Authorize>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ));
+              })()
             )}
           </TableBody>
         </Table>

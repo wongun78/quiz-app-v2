@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
 import {
   CardContent,
   CardFooter,
@@ -36,13 +38,132 @@ import {
   FaAngleRight,
   FaAngleDoubleRight,
 } from "react-icons/fa";
-import type { Quiz } from "@/types/quiz";
+import { toast } from "react-toastify";
+import type { QuizResponse } from "@/types/backend";
+import { quizService } from "@/services";
+import { getQuizDuration } from "@/types/mock";
+import { Authorize } from "@/components/auth";
+import quiz1Img from "@/assets/images/quizzes/quiz-1.jpg";
 
 interface QuizTableProps {
-  quizzes: Quiz[];
+  quizzes: QuizResponse[];
+  isLoading: boolean;
+  error: string | null;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalElements: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  onEdit: (quiz: QuizResponse) => void;
+  onDelete?: () => void;
 }
 
-const QuizTable = ({ quizzes }: QuizTableProps) => {
+const QuizTable = ({
+  quizzes,
+  isLoading,
+  error,
+  currentPage,
+  pageSize,
+  totalPages,
+  totalElements,
+  onPageChange,
+  onPageSizeChange,
+  onEdit,
+  onDelete,
+}: QuizTableProps) => {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (quiz: QuizResponse) => {
+    const confirmed = await confirmDialog({
+      title: "Delete Quiz",
+      description: `Are you sure you want to delete quiz "${quiz.title}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive",
+    });
+
+    if (!confirmed) return;
+
+    setDeletingId(quiz.id);
+    try {
+      await quizService.delete(quiz.id);
+      toast.success("Quiz deleted successfully");
+      onDelete?.();
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Failed to delete quiz";
+      toast.error(message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    onPageSizeChange(Number.parseInt(value, 10));
+    onPageChange(0);
+  };
+
+  const renderPagination = () => {
+    const pages = [];
+    const maxVisiblePages = 3;
+    let startPage = Math.max(0, currentPage - 1);
+    let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    if (currentPage === 0) {
+      endPage = Math.min(totalPages - 1, maxVisiblePages - 1);
+    } else if (currentPage === totalPages - 1) {
+      startPage = Math.max(0, totalPages - maxVisiblePages);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onPageChange(i);
+            }}
+            isActive={i === currentPage}
+            className={
+              i === currentPage
+                ? "rounded-full border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                : "rounded-full border-primary text-primary hover:bg-primary/10"
+            }
+          >
+            {i + 1}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    return pages;
+  };
+
+  if (error) {
+    return (
+      <CardWrap>
+        <CardContent className="py-8">
+          <div className="text-center text-destructive">
+            <p className="font-semibold">Error loading quizzes</p>
+            <p className="text-sm mt-2">{error}</p>
+          </div>
+        </CardContent>
+      </CardWrap>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <CardWrap>
+        <CardContent className="py-8">
+          <div className="text-center text-muted-foreground">
+            Loading quizzes...
+          </div>
+        </CardContent>
+      </CardWrap>
+    );
+  }
   return (
     <CardWrap>
       <CardHeader className="border-b">
@@ -62,52 +183,70 @@ const QuizTable = ({ quizzes }: QuizTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {quizzes.map((quiz) => (
-              <TableRow key={quiz.id} className="even:bg-muted/30">
-                <TableCell className="pl-6">
-                  <div className="w-20 overflow-hidden">
-                    <img src={quiz.image} alt={quiz.title} />
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium max-w-xs truncate">
-                  {quiz.title}
-                </TableCell>
-                <TableCell>{quiz.description}</TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {quiz.duration}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={
-                      quiz.status === "active"
-                        ? "bg-success/20 text-success border-success/30"
-                        : "bg-destructive/20 text-destructive border-destructive/30"
-                    }
-                  >
-                    {quiz.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right pr-6">
-                  <div className="flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <FaTrash />
-                    </Button>
-                  </div>
+            {quizzes.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  No quizzes found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              quizzes.map((quiz) => (
+                <TableRow key={quiz.id} className="even:bg-muted/30">
+                  <TableCell className="pl-6">
+                    <div className="w-20 overflow-hidden">
+                      <img src={quiz1Img} alt={quiz.title} />
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium max-w-xs truncate">
+                    {quiz.title}
+                  </TableCell>
+                  <TableCell>{quiz.description}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {getQuizDuration(quiz)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={
+                        quiz.active
+                          ? "bg-success/20 text-success border-success/30"
+                          : "bg-destructive/20 text-destructive border-destructive/30"
+                      }
+                    >
+                      {quiz.active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right pr-6">
+                    <div className="flex justify-end gap-1">
+                      <Authorize action="edit" resource="quiz">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                          onClick={() => onEdit(quiz)}
+                        >
+                          <FaEdit />
+                        </Button>
+                      </Authorize>
+                      <Authorize action="delete" resource="quiz">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDelete(quiz)}
+                          disabled={deletingId === quiz.id}
+                        >
+                          <FaTrash />
+                        </Button>
+                      </Authorize>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </CardContent>
@@ -115,7 +254,10 @@ const QuizTable = ({ quizzes }: QuizTableProps) => {
       <CardFooter className="flex items-center justify-between border-t">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
           <span>Items per page:</span>
-          <Select defaultValue="10">
+          <Select
+            value={pageSize.toString()}
+            onValueChange={handlePageSizeChange}
+          >
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder="10" />
             </SelectTrigger>
@@ -135,6 +277,8 @@ const QuizTable = ({ quizzes }: QuizTableProps) => {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary/10"
+                onClick={() => onPageChange(0)}
+                disabled={currentPage === 0}
               >
                 <FaAngleDoubleLeft />
               </Button>
@@ -144,41 +288,20 @@ const QuizTable = ({ quizzes }: QuizTableProps) => {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary/10"
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 0}
               >
                 <FaAngleLeft />
               </Button>
             </PaginationItem>
-            <PaginationItem>
-              <PaginationLink
-                href="#"
-                isActive
-                className="rounded-full border-primary bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                1
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink
-                href="#"
-                className="rounded-full border-primary text-primary hover:bg-primary/10"
-              >
-                2
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink
-                href="#"
-                className="rounded-full border-primary text-primary hover:bg-primary/10"
-              >
-                3
-              </PaginationLink>
-            </PaginationItem>
-
+            {renderPagination()}
             <PaginationItem>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary/10"
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1}
               >
                 <FaAngleRight />
               </Button>
@@ -188,6 +311,8 @@ const QuizTable = ({ quizzes }: QuizTableProps) => {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary/10"
+                onClick={() => onPageChange(totalPages - 1)}
+                disabled={currentPage >= totalPages - 1}
               >
                 <FaAngleDoubleRight />
               </Button>
@@ -196,7 +321,12 @@ const QuizTable = ({ quizzes }: QuizTableProps) => {
         </Pagination>
 
         <div className="text-sm text-muted-foreground hidden md:block">
-          1-{quizzes.length} of 32
+          {quizzes.length > 0
+            ? `${currentPage * pageSize + 1}-${Math.min(
+                (currentPage + 1) * pageSize,
+                totalElements
+              )} of ${totalElements}`
+            : "0 of 0"}
         </div>
       </CardFooter>
     </CardWrap>

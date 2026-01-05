@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FaPlus, FaSync, FaSearch } from "react-icons/fa";
+import { Authorize } from "@/components/auth";
 
 interface UserSearchFilterProps {
   onSearch: (params: { fullName?: string; active?: boolean }) => void;
@@ -51,7 +52,7 @@ const UserSearchFilter = ({
             <Input
               id="search-user-fullname"
               type="text"
-              placeholder="Enter full name to search..."
+              placeholder="Enter full name"
               value={searchFullName}
               onChange={(e) => setSearchFullName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -59,7 +60,7 @@ const UserSearchFilter = ({
           </div>
           <div className="space-y-2 flex-1">
             <Label>Status</Label>
-            <div className="flex items-center space-x-2 h-10">
+            <div className="flex items-center space-x-2">
               <Checkbox
                 id="active-only"
                 checked={activeOnly}
@@ -76,9 +77,11 @@ const UserSearchFilter = ({
         </div>
       </CardContent>
       <CardFooter className="flex flex-col-reverse md:flex-row md:justify-between gap-4 border-t pt-6">
-        <Button onClick={onCreate}>
-          <FaPlus /> Create User
-        </Button>
+        <Authorize action="create" resource="user">
+          <Button onClick={onCreate}>
+            <FaPlus /> Create
+          </Button>
+        </Authorize>
 
         <div className="flex gap-2">
           <Button

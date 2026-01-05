@@ -13,7 +13,7 @@ export const userSchema = z
       .min(1, "Last name is required")
       .max(50, "Last name must be less than 50 characters"),
 
-    email: z.string().min(1, "Email is required").email("Invalid email format"),
+    email: z.email("Invalid email format"),
 
     username: z
       .string()

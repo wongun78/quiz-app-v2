@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
 import {
   CardContent,
   CardFooter,
@@ -40,6 +41,7 @@ import {
 import { toast } from "react-toastify";
 import type { RoleResponse } from "@/types/backend";
 import { roleService } from "@/services";
+import { Authorize } from "@/components/auth";
 
 interface RoleTableProps {
   roles: RoleResponse[];
@@ -52,7 +54,7 @@ interface RoleTableProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onEdit: (role: RoleResponse) => void;
-  onRefetch: () => void;
+  onDelete?: () => void;
 }
 
 const RoleTable = ({
@@ -66,20 +68,26 @@ const RoleTable = ({
   onPageChange,
   onPageSizeChange,
   onEdit,
-  onRefetch,
+  onDelete,
 }: RoleTableProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (role: RoleResponse) => {
-    if (!confirm(`Are you sure you want to delete role "${role.name}"?`)) {
-      return;
-    }
+    const confirmed = await confirmDialog({
+      title: "Delete Role",
+      description: `Are you sure you want to delete role "${role.name}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive",
+    });
+
+    if (!confirmed) return;
 
     setDeletingId(role.id);
     try {
       await roleService.delete(role.id);
       toast.success("Role deleted successfully");
-      onRefetch();
+      onDelete?.();
     } catch (error: any) {
       const message = error?.response?.data?.message || "Failed to delete role";
       toast.error(message);
@@ -89,8 +97,8 @@ const RoleTable = ({
   };
 
   const handlePageSizeChange = (value: string) => {
-    onPageSizeChange(parseInt(value, 10));
-    onPageChange(0); // Reset to first page
+    onPageSizeChange(Number.parseInt(value, 10));
+    onPageChange(0);
   };
 
   const renderPagination = () => {
@@ -162,53 +170,69 @@ const RoleTable = ({
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : roles.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-center py-8 text-muted-foreground"
-                >
-                  No roles found
-                </TableCell>
-              </TableRow>
             ) : (
-              roles.map((role) => (
-                <TableRow key={role.id} className="even:bg-muted/30">
-                  <TableCell className="pl-6 font-medium">
-                    {role.name}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {role.description || "No description"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={role.isDeleted ? "outline" : "secondary"}>
-                      {role.isDeleted ? "Inactive" : "Active"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right pr-6">
-                    <div className="flex justify-end">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
-                        onClick={() => onEdit(role)}
-                        disabled={deletingId === role.id}
+              (() => {
+                if (roles.length === 0) {
+                  return (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className="text-center py-8 text-muted-foreground"
                       >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(role)}
-                        disabled={deletingId === role.id}
+                        No roles found
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+                return roles.map((role) => (
+                  <TableRow key={role.id} className="even:bg-muted/30">
+                    <TableCell className="pl-6 font-medium">
+                      {role.name}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {role.description || "No description"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          role.isDeleted
+                            ? "bg-destructive/20 text-destructive border-destructive/30"
+                            : "bg-success/20 text-success border-success/30"
+                        }
                       >
-                        <FaTrash />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        {role.isDeleted ? "Inactive" : "Active"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                      <div className="flex justify-end gap-1">
+                        <Authorize action="edit" resource="role">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                            onClick={() => onEdit(role)}
+                            disabled={deletingId === role.id}
+                          >
+                            <FaEdit />
+                          </Button>
+                        </Authorize>
+                        <Authorize action="delete" resource="role">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDelete(role)}
+                            disabled={deletingId === role.id}
+                          >
+                            <FaTrash />
+                          </Button>
+                        </Authorize>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ));
+              })()
             )}
           </TableBody>
         </Table>

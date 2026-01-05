@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { FaTimes, FaSave } from "react-icons/fa";
 import { roleSchema, type RoleFormData } from "@/validations";
-import { roleService } from "@/services";
+import { useCreateRole, useUpdateRole } from "@/hooks";
 import type { RoleResponse } from "@/types/backend";
 
 interface RoleFormProps {
@@ -27,6 +26,8 @@ interface RoleFormProps {
 
 const RoleForm = ({ role, onClose, onSuccess }: RoleFormProps) => {
   const isEditMode = !!role;
+  const createRole = useCreateRole();
+  const updateRole = useUpdateRole();
 
   const {
     register,
@@ -56,22 +57,25 @@ const RoleForm = ({ role, onClose, onSuccess }: RoleFormProps) => {
   }, [role, reset, setValue]);
 
   const onSubmit = async (data: RoleFormData) => {
-    try {
-      if (isEditMode && role) {
-        await roleService.update(role.id, data);
-        toast.success("Role updated successfully");
-      } else {
-        await roleService.create(data);
-        toast.success("Role created successfully");
-      }
-      reset();
-      onSuccess();
-      onClose();
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        `Failed to ${isEditMode ? "update" : "create"} role`;
-      toast.error(message);
+    if (isEditMode && role) {
+      updateRole.mutate(
+        { id: role.id, data },
+        {
+          onSuccess: () => {
+            reset();
+            onSuccess();
+            onClose();
+          },
+        }
+      );
+    } else {
+      createRole.mutate(data, {
+        onSuccess: () => {
+          reset();
+          onSuccess();
+          onClose();
+        },
+      });
     }
   };
 
@@ -96,7 +100,7 @@ const RoleForm = ({ role, onClose, onSuccess }: RoleFormProps) => {
               <Input
                 id="role-name"
                 type="text"
-                placeholder="Enter role name (e.g., ROLE_ADMIN, ROLE_USER)"
+                placeholder="Enter role name"
                 className={errors.name ? "border-destructive" : ""}
                 {...register("name")}
                 disabled={isEditMode}
@@ -106,11 +110,6 @@ const RoleForm = ({ role, onClose, onSuccess }: RoleFormProps) => {
                   {errors.name.message}
                 </p>
               )}
-              {isEditMode && (
-                <p className="text-xs text-muted-foreground">
-                  Role name cannot be changed
-                </p>
-              )}
             </div>
 
             {/* Description */}
@@ -118,7 +117,7 @@ const RoleForm = ({ role, onClose, onSuccess }: RoleFormProps) => {
               <Label htmlFor="role-desc">Description</Label>
               <Textarea
                 id="role-desc"
-                placeholder="Enter role description (optional, max 200 characters)"
+                placeholder="Enter role description"
                 className={`min-h-[120px] ${
                   errors.description ? "border-destructive" : ""
                 }`}
@@ -129,13 +128,10 @@ const RoleForm = ({ role, onClose, onSuccess }: RoleFormProps) => {
                   {errors.description.message}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
-                {watch("description")?.length || 0} / 200 characters
-              </p>
             </div>
 
             {/* Status Checkbox */}
-            <div className="space-y-2">
+            <div className="space-y-2 pb-6">
               <Label>Status</Label>
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -167,13 +163,12 @@ const RoleForm = ({ role, onClose, onSuccess }: RoleFormProps) => {
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             <FaSave />
-            {isSubmitting
-              ? isEditMode
-                ? "Updating..."
-                : "Creating..."
-              : isEditMode
-              ? "Update"
-              : "Save"}
+            {(() => {
+              if (isSubmitting) {
+                return isEditMode ? "Updating..." : "Creating...";
+              }
+              return isEditMode ? "Update" : "Save";
+            })()}
           </Button>
         </CardFooter>
       </form>
