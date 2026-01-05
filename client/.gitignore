@@ -32,6 +32,9 @@ dist-ssr
 # Testing
 coverage/
 
+# Build artifacts
+*.tsbuildinfo
+
 # Caches
 .cache
 .parcel-cache
