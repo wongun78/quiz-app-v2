@@ -58,9 +58,11 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         
+        String message = messageUtil.getMessage("error.validation_failed");
+        
         ApiResponse<Void> response = ApiResponse.error(
             HttpStatus.BAD_REQUEST.value(),
-            "Validation failed",
+            message,
             errors,
             request.getRequestURI()
         );
@@ -75,9 +77,11 @@ public class GlobalExceptionHandler {
         
         log.warn("Authentication failed: {}", ex.getMessage());
         
+        String message = messageUtil.getMessage("error.bad_credentials");
+        
         ApiResponse<Void> response = ApiResponse.error(
             HttpStatus.UNAUTHORIZED.value(),
-            ex.getMessage(),
+            message,
             request.getRequestURI()
         );
         
@@ -91,9 +95,11 @@ public class GlobalExceptionHandler {
         
         log.warn("Access denied: {}", ex.getMessage());
         
+        String message = messageUtil.getMessage("error.access_denied");
+        
         ApiResponse<Void> response = ApiResponse.error(
             HttpStatus.FORBIDDEN.value(),
-            "Access denied. You don't have permission to access this resource",
+            message,
             request.getRequestURI()
         );
         
