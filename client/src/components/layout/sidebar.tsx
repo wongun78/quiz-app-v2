@@ -6,32 +6,42 @@ import {
   FaQuestionCircle,
   FaUserShield,
 } from "react-icons/fa";
+import { usePermission } from "@/hooks";
 
 const MENU_ITEMS = [
   {
     label: "Quiz Management",
     path: "/admin/quizzes",
     icon: FaClipboardList,
+    permission: { action: "view", resource: "quiz" },
   },
   {
     label: "Question Management",
     path: "/admin/questions",
     icon: FaQuestionCircle,
+    permission: { action: "view", resource: "question" },
   },
   {
     label: "User Management",
     path: "/admin/users",
     icon: FaUsers,
+    permission: { action: "view", resource: "user" },
   },
   {
     label: "Role Management",
     path: "/admin/roles",
     icon: FaUserShield,
+    permission: { action: "view", resource: "role" },
   },
 ];
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const { can } = usePermission();
+
+  const visibleMenuItems = MENU_ITEMS.filter((item) =>
+    can(item.permission.action, item.permission.resource)
+  );
 
   return (
     <aside className="hidden w-64 flex-col border-r bg-card md:flex">
@@ -43,12 +53,12 @@ const AdminSidebar = () => {
 
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="flex flex-col gap-1 px-2">
-          {MENU_ITEMS.map((item, index) => {
+          {visibleMenuItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
 
             return (
               <Link
-                key={index}
+                key={item.path}
                 to={item.path}
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",

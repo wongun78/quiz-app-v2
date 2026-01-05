@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./navbar";
 import Footer from "./footer";
 import Sidebar from "./sidebar";
+import { AdminBreadcrumbs } from "@/components/ui/breadcrumbs";
 
 const AdminLayout = () => {
   return (
@@ -12,7 +13,9 @@ const AdminLayout = () => {
         <Sidebar />
 
         <div className="flex flex-1 flex-col overflow-y-auto">
-          <main className="p-4">
+          <main className="p-4 space-y-4">
+            <AdminBreadcrumbs />
+
             <Outlet />
           </main>
 
