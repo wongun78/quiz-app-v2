@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import bg from "@/assets/images/bg.png";
+import bg from "@/assets/images/bg.jpg";
 
 export default function NotFoundPage() {
   return (
