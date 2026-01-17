@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "fpt.kiennt169"
-version = "0.0.1-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 description = "Project for Spring Boot"
 
 java {
