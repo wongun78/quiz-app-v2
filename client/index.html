@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -22,7 +22,7 @@
       (function () {
         const theme = localStorage.getItem("theme");
         const systemPrefersDark = globalThis.matchMedia(
-          "(prefers-color-scheme: dark)"
+          "(prefers-color-scheme: dark)",
         ).matches;
 
         if (theme === "dark" || (!theme && systemPrefersDark)) {
