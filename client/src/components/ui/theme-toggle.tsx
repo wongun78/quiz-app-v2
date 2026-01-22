@@ -18,8 +18,8 @@ export const ThemeToggle = ({
       <button
         onClick={toggleTheme}
         className={cn(
-          "relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-          className
+          "relative inline-flex  items-center justify-center rounded-md bg-transparent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+          className,
         )}
         aria-label="Toggle theme"
       >
@@ -68,7 +68,7 @@ export const ThemeToggle = ({
     <div
       className={cn(
         "inline-flex items-center rounded-lg border border-input bg-background p-1",
-        className
+        className,
       )}
     >
       {modes.map((mode) => {
@@ -82,7 +82,7 @@ export const ThemeToggle = ({
               "inline-flex h-8 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
               isActive
                 ? "bg-accent text-accent-foreground shadow-sm"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground",
             )}
             aria-label={`${mode.label} theme`}
           >

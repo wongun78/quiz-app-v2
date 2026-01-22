@@ -43,7 +43,9 @@ import type { QuizResponse } from "@/types/backend";
 import { quizService } from "@/services";
 import { getQuizDuration } from "@/types/mock";
 import { Authorize } from "@/components/auth";
-import quiz1Img from "@/assets/images/quizzes/quiz-1.jpg";
+
+const QUIZ_PLACEHOLDER_IMAGE =
+  "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&h=300&fit=crop&q=80";
 
 interface QuizTableProps {
   quizzes: QuizResponse[];
@@ -133,7 +135,7 @@ const QuizTable = ({
           >
             {i + 1}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -197,7 +199,7 @@ const QuizTable = ({
                 <TableRow key={quiz.id} className="even:bg-muted/30">
                   <TableCell className="pl-6">
                     <div className="w-20 overflow-hidden">
-                      <img src={quiz1Img} alt={quiz.title} />
+                      <img src={QUIZ_PLACEHOLDER_IMAGE} alt={quiz.title} />
                     </div>
                   </TableCell>
                   <TableCell className="font-medium max-w-xs truncate">
@@ -324,7 +326,7 @@ const QuizTable = ({
           {quizzes.length > 0
             ? `${currentPage * pageSize + 1}-${Math.min(
                 (currentPage + 1) * pageSize,
-                totalElements
+                totalElements,
               )} of ${totalElements}`
             : "0 of 0"}
         </div>

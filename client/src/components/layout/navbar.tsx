@@ -1,6 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import React from "react";
-import logoIcon from "@/assets/icons/logo.png";
+import { DinoFootprint } from "@/components/shared/DinoIcons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,9 +15,10 @@ import { useAuth } from "@/contexts";
 import { usePermission } from "@/hooks";
 import { Authorize } from "@/components/auth";
 import { APP_INFO, NAV_LINKS, ROUTES } from "@/config/constants";
+import React from "react";
 
 const getNavLinkClasses = (isActive: boolean) =>
-  `text-sm font-medium transition-colors cursor-pointer ${
+  `text-sm font-semibold transition-colors cursor-pointer relative group ${
     isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
   }`;
 
@@ -35,7 +35,7 @@ const getUserInitials = (user: any) => {
 const getUserAvatarUrl = (user: any) => {
   const seed = user?.username || user?.email || "default";
   return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(
-    seed
+    seed,
   )}`;
 };
 
@@ -52,17 +52,22 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-md shadow-sm">
       <div className="container-custom flex h-16 items-center justify-between">
         <Link
           to={ROUTES.HOME}
-          className="flex items-center gap-2 font-bold cursor-pointer"
+          className="flex items-center gap-3 font-bold cursor-pointer group"
         >
-          <img src={logoIcon} alt={APP_INFO.LOGO_ALT} className="h-8 w-8" />
-          <span className="text-xl text-foreground">{APP_INFO.NAME}</span>
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-md group-hover:bg-primary/30 transition-all"></div>
+            <DinoFootprint size={36} className="relative text-primary" />
+          </div>
+          <span className="text-xl text-foreground group-hover:text-primary transition-colors">
+            {APP_INFO.NAME}
+          </span>
         </Link>
 
-        <nav className="hidden gap-6 md:flex items-center">
+        <nav className="hidden gap-8 md:flex items-center">
           {NAV_LINKS.map((link, index) => (
             <React.Fragment key={link.path}>
               <NavLink
@@ -70,9 +75,9 @@ const Navbar = () => {
                 className={({ isActive }) => getNavLinkClasses(isActive)}
               >
                 {link.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
               </NavLink>
 
-              {/* Insert Management after Quizzes (index 1) */}
               {index === 1 && (
                 <Authorize roles="ROLE_ADMIN">
                   <NavLink
@@ -80,6 +85,7 @@ const Navbar = () => {
                     className={({ isActive }) => getNavLinkClasses(isActive)}
                   >
                     Management
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
                   </NavLink>
                 </Authorize>
               )}
@@ -89,40 +95,47 @@ const Navbar = () => {
 
         <div className="flex items-center gap-4">
           {/* Theme Toggle */}
-          <ThemeToggle variant="icon" />
+          <div className="transition-all hover:rotate-12 hover:text-primary">
+            <ThemeToggle variant="icon" />
+          </div>
 
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-10 w-10 rounded-full"
+                  className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-primary/20 transition-all"
                 >
-                  <Avatar className="h-10 w-10 border p-1 cursor-pointer">
+                  <Avatar className="h-10 w-10 border-2 border-primary/20 cursor-pointer">
                     <AvatarImage
                       src={getUserAvatarUrl(user)}
                       alt={user?.fullName || user?.username || "User"}
                     />
-                    <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      {getUserInitials(user)}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
-                  <p className="text-sm font-medium leading-none">
-                    {user?.fullName || user?.username || "User"}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground mt-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <DinoFootprint size={14} className="text-primary" />
+                    <p className="text-sm font-semibold leading-none">
+                      {user?.fullName || user?.username || "User"}
+                    </p>
+                  </div>
+                  <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
                   </p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer hover:text-primary">
                   Change Password
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-destructive cursor-pointer"
+                  className="text-destructive cursor-pointer hover:bg-destructive/10"
                   onClick={handleLogout}
                 >
                   Log out
@@ -133,11 +146,11 @@ const Navbar = () => {
             <>
               <Link
                 to={ROUTES.LOGIN}
-                className="text-sm font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
+                className="text-sm font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
               >
                 Login
               </Link>
-              <Button asChild>
+              <Button asChild className="shadow-lg shadow-primary/30">
                 <Link to={ROUTES.REGISTER}>Register</Link>
               </Button>
             </>

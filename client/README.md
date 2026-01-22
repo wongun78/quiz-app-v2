@@ -1,11 +1,21 @@
-# 🎯 Quiz Management System
+# 🦕 Dino Quiz - Frontend
 
-A modern, full-featured quiz management platform built with React 19, TypeScript, and Tailwind CSS v4. This application provides comprehensive tools for creating, managing, and taking quizzes with an intuitive admin dashboard and beautiful user interface.
+A prehistoric-themed, modern quiz platform featuring the **Dino-Green Design System**. Built with React 19, TypeScript, and Tailwind CSS v4, this application combines professional design with a unique dinosaur aesthetic through custom SVG icons, gradient backgrounds, and evolution-inspired UI elements.
 
 ![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178C6?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC?logo=tailwind-css)
-![Vite](https://img.shields.io/badge/Vite-6.0+-646CFF?logo=vite)
+![Vite](https://img.shields.io/badge/Vite-7.2+-646CFF?logo=vite)
+
+## 🦖 Dino-Green Design System
+
+This project features a **complete custom design system** with prehistoric aesthetics:
+
+- **🎨 Color Palette**: 10-shade Dino-Green spectrum (#0B4619 to #E8F8EC) with secondary Amber, Clay, and Sky colors
+- **🦕 Custom Icons**: 11 hand-crafted SVG components (DinoFootprint, FernLeaf, FossilGear, MountainStrata, DinoEgg, DinoClawPlay, LeafCheck, SpikeTailRetry, ShieldLeafCorrect, CrossedFernsWrong, FossilLock)
+- **✨ Modern Effects**: Gradient backgrounds, glow effects, hover animations, and smooth transitions
+- **📐 Design Tokens**: TypeScript constants for colors, typography, spacing, shadows, and animations
+- **📚 Documentation**: Complete design specs in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), [DESIGN_USAGE_GUIDE.md](DESIGN_USAGE_GUIDE.md), and [DESIGN_IMPLEMENTATION.md](DESIGN_IMPLEMENTATION.md)
 
 ## ✨ Features
 
@@ -216,10 +226,10 @@ manualChunks: (id) => {
 
 ```typescript
 const QuizManagementPage = lazy(
-  () => import("@/pages/admin/QuizManagementPage")
+  () => import("@/pages/admin/QuizManagementPage"),
 );
 const UserManagementPage = lazy(
-  () => import("@/pages/admin/UserManagementPage")
+  () => import("@/pages/admin/UserManagementPage"),
 );
 // + 2 more admin pages
 ```
@@ -235,13 +245,11 @@ const UserManagementPage = lazy(
 #### Three-Tier Error Handling
 
 1. **Global Error Boundary** (`ErrorBoundary.tsx`)
-
    - Catches React rendering errors
    - Shows fallback UI with error details
    - Prevents entire app crash
 
 2. **Route Error Boundary** (`RouteErrorBoundary.tsx`)
-
    - Handles route-specific errors
    - 404 Not Found pages
    - Navigation errors
@@ -265,7 +273,7 @@ axiosInstance.interceptors.response.use(
     // Show user-friendly error toast
     toast.error(getErrorMessage(error));
     return Promise.reject(error);
-  }
+  },
 );
 ```
 

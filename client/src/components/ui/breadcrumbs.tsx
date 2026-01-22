@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BreadcrumbItem {
@@ -53,7 +53,7 @@ export function Breadcrumbs({
       aria-label="Breadcrumb"
       className={cn(
         "flex items-center space-x-1 text-sm text-muted-foreground",
-        className
+        className,
       )}
     >
       {breadcrumbs.map((item, index) => {
@@ -66,14 +66,14 @@ export function Breadcrumbs({
 
             {isLast ? (
               <span className="font-medium text-foreground" aria-current="page">
-                {isHome ? <Home className="h-4 w-4" /> : item.label}
+                {item.label}
               </span>
             ) : (
               <Link
                 to={item.path}
                 className="hover:text-foreground transition-colors flex items-center"
               >
-                {isHome ? <Home className="h-4 w-4" /> : item.label}
+                {item.label}
               </Link>
             )}
           </div>

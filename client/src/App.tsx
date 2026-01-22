@@ -24,16 +24,16 @@ const NotFoundPage = lazy(() => import("@/pages/error/404"));
 const ForbiddenPage = lazy(() => import("@/pages/error/403"));
 
 const QuizManagementPage = lazy(
-  () => import("@/pages/admin/QuizManagementPage")
+  () => import("@/pages/admin/QuizManagementPage"),
 );
 const QuestionManagementPage = lazy(
-  () => import("@/pages/admin/QuestionManagementPage")
+  () => import("@/pages/admin/QuestionManagementPage"),
 );
 const UserManagementPage = lazy(
-  () => import("@/pages/admin/UserManagementPage")
+  () => import("@/pages/admin/UserManagementPage"),
 );
 const RoleManagementPage = lazy(
-  () => import("@/pages/admin/RoleManagementPage")
+  () => import("@/pages/admin/RoleManagementPage"),
 );
 
 const ExamPage = lazy(() => import("@/pages/exam"));

@@ -1,6 +1,6 @@
-# 🎯 Quiz Management System - Full Stack Application
+# Dino Quiz - Prehistoric Learning Platform
 
-> **Monorepo** cho hệ thống quản lý quiz với Spring Boot Backend và React Frontend
+> **Full-stack Quiz Application** with Dinosaur-themed Design System - Spring Boot Backend + React Frontend
 
 ![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.0-6DB33F?logo=springboot)
@@ -8,6 +8,19 @@
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=oracle)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
+
+## 🌿 About Dino Quiz
+
+**Dino Quiz** is an evolution-inspired learning platform that combines prehistoric themes with modern education technology. Embark on a journey through knowledge with our Dino-Green design system featuring custom SVG icons, gradient backgrounds, and an immersive user experience.
+
+### ✨ Key Features
+
+- 🎨 **Custom Dino-Green Design System** - 10-shade color palette with prehistoric aesthetics
+- 🖼️ **11 Custom SVG Icons** - DinoFootprint, FernLeaf, FossilGear, and more!
+- 💚 **Modern UI/UX** - Gradient backgrounds, hover effects, and smooth animations
+- 🔒 **Secure Authentication** - JWT-based auth with role management
+- 📊 **Admin Dashboard** - Complete quiz and user management
+- 📱 **Fully Responsive** - Works perfectly on mobile, tablet, and desktop
 
 ## 📁 Cấu trúc Monorepo
 

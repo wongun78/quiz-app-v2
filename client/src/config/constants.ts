@@ -108,20 +108,20 @@ export const ROLES = {
 } as const;
 
 export const APP_INFO = {
-  NAME: "Quizzes",
+  NAME: "Dino Quiz",
   DESCRIPTION:
-    "The leading online quiz platform in Vietnam. Enhance your knowledge and develop critical thinking every day.",
-  LOGO_ALT: "Quiz Logo",
+    "Embark on a prehistoric learning journey! Master knowledge through evolution-inspired quizzes and challenges.",
+  LOGO_ALT: "Dino Quiz Logo",
   COPYRIGHT_YEAR: 2025,
 } as const;
 
 export const CONTACT_INFO = {
-  EMAIL: "kiennt169@fpt.com",
-  PHONE: "+84 999 888 999",
-  PHONE_DISPLAY: "+84 999 888 999",
-  ADDRESS: "123 Khuong Dinh, Thanh Xuan, Ha Noi, Viet Nam",
+  EMAIL: "hello@dinoquiz.academy",
+  PHONE: "+84 912 345 678",
+  PHONE_DISPLAY: "+84 912 345 678",
+  ADDRESS: "456 Prehistoric Park, Jurassic District, Evolution City",
   GOOGLE_MAPS_URL:
-    "https://maps.google.com/?q=123+Khuong+Dinh,+Thanh+Xuan,+Ha+Noi,+Viet+Nam",
+    "https://maps.google.com/?q=456+Prehistoric+Park,+Jurassic+District",
 } as const;
 
 export const NAV_LINKS = [

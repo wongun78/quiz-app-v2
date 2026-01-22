@@ -77,11 +77,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const user = await authService.getCurrentUser();
       dispatch({ type: "AUTH_SUCCESS", payload: user });
     } catch (error: any) {
-      if (error?.response?.status === 401 || error?.response?.status === 403) {
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        dispatch({ type: "AUTH_FAILURE" });
-      } else {
-        dispatch({ type: "AUTH_FAILURE" });
+      // Clear tokens on any auth error (401, 403, invalid token, etc.)
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      dispatch({ type: "AUTH_FAILURE" });
+
+      // Only show error if it's not a normal 401/403
+      if (
+        error?.response?.status &&
+        ![401, 403].includes(error.response.status)
+      ) {
+        console.error("Auth check failed:", error);
       }
     }
   }, []);
@@ -156,7 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout,
       refetchUser,
     }),
-    [state, login, register, logout, refetchUser]
+    [state, login, register, logout, refetchUser],
   );
 
   return (

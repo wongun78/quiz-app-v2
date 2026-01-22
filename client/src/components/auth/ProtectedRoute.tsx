@@ -22,6 +22,7 @@ export const ProtectedRoute = ({
     return <LoadingFallback message="Checking authentication..." />;
   }
 
+  // Not authenticated - redirect to login
   if (!isAuthenticated) {
     return (
       <Navigate
@@ -32,10 +33,12 @@ export const ProtectedRoute = ({
     );
   }
 
+  // Authenticated but checking role permissions
   if (requiredRole && user) {
     const userRoles = new Set(user.roles);
     const hasPermission = requiredRole.some((role) => userRoles.has(role));
 
+    // Authenticated but no permission - show 403
     if (!hasPermission) {
       return <Navigate to={ROUTES.FORBIDDEN} replace />;
     }

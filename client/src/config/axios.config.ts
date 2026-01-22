@@ -35,7 +35,7 @@ axiosInstance.interceptors.request.use(
   },
   (error: AxiosError) => {
     throw error;
-  }
+  },
 );
 
 axiosInstance.interceptors.response.use(
@@ -100,7 +100,7 @@ axiosInstance.interceptors.response.use(
     }
 
     throw error;
-  }
+  },
 );
 
 /**
@@ -119,7 +119,7 @@ const handleRefreshToken = async (): Promise<string | null> => {
         {
           headers: { [NO_RETRY_HEADER]: "true" },
           withCredentials: true,
-        }
+        },
       );
 
       const newToken = response.data?.token;
@@ -166,9 +166,21 @@ const handleUnauthorized = () => {
  * Handle 403 Forbidden
  */
 const handleForbidden = () => {
+  // Check if user is authenticated (has valid token)
+  const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  const userInfo = localStorage.getItem(STORAGE_KEYS.USER_INFO);
+
+  // If no valid auth info, just clear storage silently (invalid/expired token case)
+  if (!accessToken || !userInfo) {
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER_INFO);
+    return; // Don't redirect, let public pages work normally
+  }
+
+  // If authenticated but forbidden, show error and redirect
   toast.error(ERROR_MESSAGES.FORBIDDEN);
 
-  // Redirect to 403 page
+  // Redirect to 403 page only if not already there
   if (globalThis.location.pathname !== ROUTES.FORBIDDEN) {
     globalThis.location.href = ROUTES.FORBIDDEN;
   }

@@ -120,9 +120,9 @@ public class DataInitializer {
             admin.setEmail(adminEmail);
             admin.setUsername(adminEmail.substring(0, adminEmail.indexOf('@')));
             admin.setPassword(passwordEncoder.encode(adminPassword));
-            admin.setFirstName("Admin");
-            admin.setLastName("User");
-            admin.setFullName(adminFullname);
+            admin.setFirstName("Rex");
+            admin.setLastName("Thunderfoot");
+            admin.setFullName("Rex Thunderfoot");
             admin.setActive(true);
             admin.setRefreshToken(null); 
             admin.setRoles(Set.of(adminRole, userRole));
@@ -133,9 +133,9 @@ public class DataInitializer {
             user.setEmail(userEmail);
             user.setUsername(userEmail.substring(0, userEmail.indexOf('@')));
             user.setPassword(passwordEncoder.encode(userPassword));
-            user.setFirstName("Test");
-            user.setLastName("User");
-            user.setFullName(userFullname);
+            user.setFirstName("Veloci");
+            user.setLastName("Swiftclaw");
+            user.setFullName("Veloci Swiftclaw");
             user.setActive(true);
             user.setRefreshToken(null); 
             user.setRoles(Set.of(userRole));
@@ -150,43 +150,68 @@ public class DataInitializer {
     private void initQuizzes() {
         if (quizRepository.count() > 0) return;
 
-        Quiz javaQuiz = createQuiz("Java Programming Basics", 
-            "Test your knowledge of Java programming fundamentals", 30, true);
+        Quiz javaQuiz = createQuiz("Prehistoric Evolution", 
+            "🦕 Journey through time and test your knowledge of dinosaur evolution and ancient ecosystems", 30, true);
         
-        Question q1 = createQuestion("What is the correct syntax to output 'Hello World' in Java?", 
+        Question q1 = createQuestion("Which period is known as the 'Age of Dinosaurs'?", 
             QuestionTypeEnum.SINGLE_CHOICE, 5);
-        createAnswer(q1, "System.out.println(\"Hello World\");", true);
-        createAnswer(q1, "Console.WriteLine(\"Hello World\");", false);
-        createAnswer(q1, "print(\"Hello World\")", false);
+        createAnswer(q1, "Mesozoic Era", true);
+        createAnswer(q1, "Paleozoic Era", false);
+        createAnswer(q1, "Cenozoic Era", false);
+        createAnswer(q1, "Precambrian Era", false);
         
-        Question q2 = createQuestion("Which of the following are primitive data types in Java?", 
+        Question q2 = createQuestion("Which of these were apex predators during the Cretaceous period?", 
             QuestionTypeEnum.MULTIPLE_CHOICE, 10);
-        createAnswer(q2, "int", true);
-        createAnswer(q2, "String", false);
-        createAnswer(q2, "boolean", true);
+        createAnswer(q2, "Tyrannosaurus Rex", true);
+        createAnswer(q2, "Velociraptor", true);
+        createAnswer(q2, "Brachiosaurus", false);
+        createAnswer(q2, "Stegosaurus", false);
         
         javaQuiz.getQuestions().add(q1);
         javaQuiz.getQuestions().add(q2);
         quizRepository.save(javaQuiz);
 
-        Quiz springQuiz = createQuiz("Spring Boot Fundamentals", 
-            "Assess your understanding of Spring Boot framework", 45, true);
+        Quiz springQuiz = createQuiz("Ancient Ecosystems", 
+            "🌿 Explore the prehistoric world's biodiversity and environmental adaptations", 45, true);
         
-        Question sq1 = createQuestion("What annotation is used to create a REST controller?", 
+        Question sq1 = createQuestion("What was the primary climate during the Jurassic period?", 
             QuestionTypeEnum.SINGLE_CHOICE, 5);
-        createAnswer(sq1, "@RestController", true);
-        createAnswer(sq1, "@Controller", false);
-        createAnswer(sq1, "@Service", false);
+        createAnswer(sq1, "Warm and humid", true);
+        createAnswer(sq1, "Cold and dry", false);
+        createAnswer(sq1, "Extremely hot desert", false);
+        createAnswer(sq1, "Ice age conditions", false);
         
-        Question sq2 = createQuestion("Which are Spring Boot Starter dependencies?", 
+        Question sq2 = createQuestion("Which plants were dominant during the Mesozoic Era?", 
             QuestionTypeEnum.MULTIPLE_CHOICE, 10);
-        createAnswer(sq2, "spring-boot-starter-web", true);
-        createAnswer(sq2, "spring-boot-starter-data-jpa", true);
-        createAnswer(sq2, "hibernate-core", false);
+        createAnswer(sq2, "Ferns", true);
+        createAnswer(sq2, "Conifers", true);
+        createAnswer(sq2, "Flowering plants (appeared late)", true);
+        createAnswer(sq2, "Grasses", false);
         
         springQuiz.getQuestions().add(sq1);
         springQuiz.getQuestions().add(sq2);
         quizRepository.save(springQuiz);
+
+        Quiz fossilQuiz = createQuiz("Fossil Discovery", 
+            "🦴 Master the art of paleontology and uncover secrets hidden in ancient rocks", 25, true);
+        
+        Question fq1 = createQuestion("What is the study of fossils called?", 
+            QuestionTypeEnum.SINGLE_CHOICE, 5);
+        createAnswer(fq1, "Paleontology", true);
+        createAnswer(fq1, "Archaeology", false);
+        createAnswer(fq1, "Geology", false);
+        createAnswer(fq1, "Biology", false);
+        
+        Question fq2 = createQuestion("Which methods are used to date fossils?", 
+            QuestionTypeEnum.MULTIPLE_CHOICE, 10);
+        createAnswer(fq2, "Radiometric dating", true);
+        createAnswer(fq2, "Stratigraphy", true);
+        createAnswer(fq2, "Carbon-14 dating", true);
+        createAnswer(fq2, "DNA sequencing", false);
+        
+        fossilQuiz.getQuestions().add(fq1);
+        fossilQuiz.getQuestions().add(fq2);
+        quizRepository.save(fossilQuiz);
 
         log.info("Created {} quizzes with questions", quizRepository.count());
     }

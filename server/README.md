@@ -1,8 +1,8 @@
-# Quiz Application - Spring Boot REST API
+# 🦕 Dino Quiz - Spring Boot Backend
 
 ## 🎯 Project Overview
 
-Spring Boot REST API for Quiz Management System with JWT Authentication, PostgreSQL database, and Docker support.
+RESTful API backend for **Dino Quiz**, a prehistoric-themed learning platform. Built with Spring Boot 4.0, PostgreSQL, and JWT authentication. Provides comprehensive quiz management, user authentication, and exam submission endpoints.
 
 ## 📋 Features
 
@@ -904,5 +904,5 @@ Educational project for Spring Boot training.
 
 ## 👥 Contributors
 
-- Student: [Your Name]
+- Student: KienNT169 (FPT University)
 - Course: FR.KS.JAVA.SPRINGBOOT.P.L001

@@ -1,7 +1,8 @@
 {
-  "name": "quiz-app-v2",
+  "name": "dino-quiz-frontend",
   "private": true,
   "version": "2.0.0",
+  "description": "Prehistoric-themed quiz platform with Dino-Green design system",
   "type": "module",
   "scripts": {
     "dev": "vite",

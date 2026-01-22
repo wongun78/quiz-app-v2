@@ -1,46 +1,49 @@
 import TeamCard from "@/components/team/team-card";
+import { DinoEgg } from "@/components/shared/DinoIcons";
+import { SectionHeading } from "@/components/shared/SectionHeading";
 import type { MockTeamMember } from "@/types/mock";
 
-import team1Img from "@/assets/images/teams/team-1.png";
-import team2Img from "@/assets/images/teams/team-2.png";
-import team3Img from "@/assets/images/teams/team-3.png";
+const team1Img =
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80";
+const team2Img =
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&q=80";
+const team3Img =
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&q=80";
 
 const featuredTeams: MockTeamMember[] = [
   {
     id: "1",
-    name: "Cong Dinh",
-    role: "Tech Lead",
+    name: "Rex Thunderfoot",
+    role: "Chief Evolution Officer",
     image: team1Img,
   },
   {
     id: "2",
-    name: "Trung Kien",
-    role: "QA Engineer",
+    name: "Veloci Swiftclaw",
+    role: "Learning Architect",
     image: team2Img,
   },
   {
     id: "3",
-    name: "Minh Tuan",
-    role: "Developer",
+    name: "Stego Brightscale",
+    role: "Knowledge Curator",
     image: team3Img,
   },
 ];
 
 const FeaturedTeams = () => {
   return (
-    <section className="py-12">
+    <section className="py-20 bg-secondary/20">
       <div className="container-custom">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-            Our Team
-          </h2>
-        </div>
+        <SectionHeading
+          icon={<DinoEgg size={32} className="text-primary" />}
+          title="Meet Our Team"
+          description="The minds behind Dino Quiz"
+        />
 
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredTeams.map((team) => (
-            <div key={team.id} className="flex-1 min-w-[250px]">
-              <TeamCard team={team} />
-            </div>
+            <TeamCard key={team.id} team={team} />
           ))}
         </div>
       </div>
