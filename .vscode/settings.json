@@ -1,6 +1,6 @@
 {
   "java.compile.nullAnalysis.mode": "automatic",
-  "java.configuration.updateBuildConfiguration": "interactive",
+  "java.configuration.updateBuildConfiguration": "automatic",
   "java.project.sourcePaths": [""],
   "css.customData": [".vscode/tailwind.json"],
   "css.lint.unknownAtRules": "ignore",

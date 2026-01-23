@@ -25,8 +25,5 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     @EntityGraph(attributePaths = {"roles"})
     Page<User> findAll(Specification<User> spec, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"roles"})
-    Optional<User> findByRefreshTokenAndEmail(String refreshToken, String email);
-
     boolean existsByEmail(String email);
 }

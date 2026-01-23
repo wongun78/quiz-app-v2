@@ -51,9 +51,6 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Boolean active = true;
     
-    @Column(name = "refresh_token", columnDefinition = "TEXT")
-    private String refreshToken;
-    
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_roles",

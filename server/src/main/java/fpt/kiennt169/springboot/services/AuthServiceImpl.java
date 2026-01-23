@@ -1,9 +1,11 @@
 package fpt.kiennt169.springboot.services;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import fpt.kiennt169.springboot.dtos.users.AuthResponseDTO;
 import fpt.kiennt169.springboot.dtos.users.LoginRequestDTO;
 import fpt.kiennt169.springboot.dtos.users.RegisterRequestDTO;
+import fpt.kiennt169.springboot.entities.RefreshToken;
 import fpt.kiennt169.springboot.entities.Role;
 import fpt.kiennt169.springboot.entities.User;
 import fpt.kiennt169.springboot.enums.RoleEnum;
@@ -36,7 +39,11 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final RefreshTokenService refreshTokenService;
     private final UserMapper userMapper;
+
+    @Value("${jwt.refresh-expiration:604800000}")
+    private long refreshTokenExpiration;
 
     @Override
     @Transactional
@@ -59,16 +66,24 @@ public class AuthServiceImpl implements AuthService {
                     .collect(Collectors.toSet());
             
             String token = tokenService.generateToken(user, roleNames);
-            String refreshToken = tokenService.generateRefreshToken(user);
+            String refreshTokenString = tokenService.generateRefreshToken();
             
-            user.setRefreshToken(refreshToken);
-            userRepository.save(user);
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .token(refreshTokenString)
+                    .userId(user.getId())
+                    .email(user.getEmail())
+                    .roles(roleNames)
+                    .createdAt(Instant.now())
+                    .expiresAt(Instant.now().plusMillis(refreshTokenExpiration))
+                    .build();
+            
+            refreshTokenService.saveRefreshToken(refreshToken, refreshTokenExpiration / 1000);
 
             log.info("User logged in successfully: {}", user.getEmail());
 
             return new AuthResponseDTO(
                     token,
-                    refreshToken,
+                    refreshTokenString,
                     userMapper.toResponseDTO(user),
                     roleNames
             );
@@ -114,69 +129,88 @@ public class AuthServiceImpl implements AuthService {
         Set<Role> roles = new HashSet<>();
         roles.add(userRole);
         user.setRoles(roles);
-
+        
         User savedUser = userRepository.save(user);
         log.info("User registered successfully: {}", savedUser.getEmail());
-
+        
         Set<String> roleNames = savedUser.getRoles().stream()
                 .map(role -> role.getName().name())
                 .collect(Collectors.toSet());
         
-        String token = tokenService.generateToken(savedUser, roleNames);
-        String refreshToken = tokenService.generateRefreshToken(savedUser);
+        String accessToken = tokenService.generateToken(savedUser, roleNames);
+        String refreshTokenString = tokenService.generateRefreshToken();
         
-        savedUser.setRefreshToken(refreshToken);
-        userRepository.save(savedUser);
-
+        RefreshToken refreshToken = RefreshToken.builder()
+                .token(refreshTokenString)
+                .userId(savedUser.getId())
+                .email(savedUser.getEmail())
+                .roles(roleNames)
+                .createdAt(Instant.now())
+                .expiresAt(Instant.now().plusMillis(refreshTokenExpiration))
+                .build();
+        
+        refreshTokenService.saveRefreshToken(refreshToken, refreshTokenExpiration / 1000);
+        
+        log.info("User registered successfully: {}", savedUser.getEmail());
+        
         return new AuthResponseDTO(
-                token,
-                refreshToken,
+                accessToken,
+                refreshTokenString,
                 userMapper.toResponseDTO(savedUser),
                 roleNames
         );
     }
-    
+
     @Override
-    @Transactional
-    public AuthResponseDTO refresh(String refreshToken) {
+    @Transactional(readOnly = true)
+    public AuthResponseDTO refresh(String refreshTokenString) {
         log.debug("Attempting to refresh token");
         
-        if (!tokenService.validateRefreshToken(refreshToken)) {
-            throw new BadCredentialsException("Invalid or expired refresh token");
+        if (refreshTokenString == null || refreshTokenString.isBlank()) {
+            throw new BadCredentialsException("Refresh token cannot be null or empty");
         }
         
-        String email = tokenService.getEmailFromRefreshToken(refreshToken);
-        if (email == null) {
-            throw new BadCredentialsException("Cannot extract email from refresh token");
+        RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenString)
+                .orElseThrow(() -> new BadCredentialsException("Refresh token not found or expired"));
+        
+        if (refreshToken.isExpired()) {
+            refreshTokenService.deleteToken(refreshTokenString);
+            throw new BadCredentialsException("Refresh token has expired");
         }
         
-        if (refreshToken == null) {
-            throw new BadCredentialsException("Refresh token cannot be null");
-        }
+        User user = userRepository.findByEmail(refreshToken.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", refreshToken.getEmail()));
         
-        User user = userRepository.findByRefreshTokenAndEmail(refreshToken, email)
-                .orElseThrow(() -> new BadCredentialsException("Refresh token not found or does not match"));
-        
-        Set<String> roleNames = user.getRoles().stream()
+        Set<String> currentRoles = user.getRoles().stream()
                 .map(role -> role.getName().name())
                 .collect(Collectors.toSet());
         
-        String newAccessToken = tokenService.generateToken(user, roleNames);
-        String newRefreshToken = tokenService.generateRefreshToken(user);
+        String newAccessToken = tokenService.generateToken(user, currentRoles);
+        String newRefreshTokenString = tokenService.generateRefreshToken();
         
-        user.setRefreshToken(newRefreshToken);
-        userRepository.save(user);
+        refreshTokenService.deleteToken(refreshTokenString);
+        
+        RefreshToken newRefreshToken = RefreshToken.builder()
+                .token(newRefreshTokenString)
+                .userId(user.getId())
+                .email(user.getEmail())
+                .roles(currentRoles)
+                .createdAt(Instant.now())
+                .expiresAt(Instant.now().plusMillis(refreshTokenExpiration))
+                .build();
+        
+        refreshTokenService.saveRefreshToken(newRefreshToken, refreshTokenExpiration / 1000);
         
         log.info("Token refreshed successfully for user: {}", user.getEmail());
         
         return new AuthResponseDTO(
                 newAccessToken,
-                newRefreshToken,
+                newRefreshTokenString,
                 userMapper.toResponseDTO(user),
-                roleNames
+                currentRoles
         );
     }
-    
+
     @Override
     @Transactional
     public void logout() {
@@ -187,15 +221,14 @@ public class AuthServiceImpl implements AuthService {
                 .getAuthentication()
                 .getName();
         
-        if (email == null) {
-            throw new BadCredentialsException("Email cannot be null");
+        if (email == null || email.equals("anonymousUser")) {
+            throw new BadCredentialsException("User not authenticated");
         }
         
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
-        
-        user.setRefreshToken(null);
-        userRepository.save(user);
+        refreshTokenService.findByEmail(email).ifPresent(refreshToken -> {
+            refreshTokenService.deleteToken(refreshToken.getToken());
+            log.info("Refresh token deleted for user: {}", email);
+        });
         
         log.info("User logged out successfully: {}", email);
     }

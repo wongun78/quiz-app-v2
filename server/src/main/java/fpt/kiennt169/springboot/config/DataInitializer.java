@@ -124,7 +124,6 @@ public class DataInitializer {
             admin.setLastName("Thunderfoot");
             admin.setFullName("Rex Thunderfoot");
             admin.setActive(true);
-            admin.setRefreshToken(null); 
             admin.setRoles(Set.of(adminRole, userRole));
             userRepository.save(admin);
             log.info("Created user: {} (admin)", admin.getEmail());
@@ -137,7 +136,6 @@ public class DataInitializer {
             user.setLastName("Swiftclaw");
             user.setFullName("Veloci Swiftclaw");
             user.setActive(true);
-            user.setRefreshToken(null); 
             user.setRoles(Set.of(userRole));
             userRepository.save(user);
             log.info("Created user: {} (user)", user.getEmail());

@@ -29,28 +29,12 @@ public interface TokenService {
     String generateToken(User user, Set<String> roles);
     
     /**
-     * Generate JWT refresh token for user
+     * Generate secure random refresh token
+     * Uses UUID for cryptographically strong random token
      * 
-     * @param user the authenticated user
-     * @return JWT refresh token string
+     * @return secure random refresh token string
      */
-    String generateRefreshToken(User user);
-    
-    /**
-     * Validate refresh token
-     * 
-     * @param token the refresh token to validate
-     * @return true if token is valid, false otherwise
-     */
-    boolean validateRefreshToken(String token);
-    
-    /**
-     * Extract email from refresh token
-     * 
-     * @param token the refresh token
-     * @return the user's email address
-     */
-    String getEmailFromRefreshToken(String token);
+    String generateRefreshToken();
 
     /**
      * Create Authentication object from JWT token

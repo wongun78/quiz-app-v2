@@ -3,6 +3,7 @@ package fpt.kiennt169.springboot.services;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
@@ -56,55 +57,10 @@ public class TokenServiceImpl implements TokenService {
     }
     
     @Override
-    public String generateRefreshToken(fpt.kiennt169.springboot.entities.User user) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + refreshTokenExpirationInMs);
-
-        SecretKey key = getSigningKey();
-
-        return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("userId", user.getId().toString())
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(key)
-                .compact();
-    }
-    
-    @Override
-    public boolean validateRefreshToken(String token) {
-        try {
-            Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token);
-            return true;
-        } catch (ExpiredJwtException e) {
-            log.warn("Refresh token is expired: {}", e.getMessage());
-            return false;
-        } catch (JwtException e) {
-            log.warn("Invalid refresh token: {}", e.getMessage());
-            return false;
-        } catch (Exception e) {
-            log.error("Cannot validate refresh token: {}", e.getMessage());
-            return false;
-        }
-    }
-    
-    @Override
-    public String getEmailFromRefreshToken(String token) {
-        try {
-            Claims claims = Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-            
-            return claims.getSubject();
-        } catch (Exception e) {
-            log.error("Cannot extract email from refresh token: {}", e.getMessage());
-            return null;
-        }
+    public String generateRefreshToken() {
+        // Generate cryptographically strong random token using UUID
+        // No JWT needed - Redis is the source of truth
+        return java.util.UUID.randomUUID().toString().replace("-", "");
     }
 
     @Override
