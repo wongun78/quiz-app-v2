@@ -1,0 +1,22 @@
+# Redisson Configuration for Rate Limiting
+# Uses single server mode (not cluster)
+singleServerConfig:
+  address: "redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}"
+  password: ${REDIS_PASSWORD:}
+  database: ${REDIS_DATABASE:0}
+  connectionPoolSize: 32
+  connectionMinimumIdleSize: 8
+  timeout: 3000
+  connectTimeout: 10000
+  retryAttempts: 3
+  retryInterval: 1500
+
+# Codec for serialization
+codec: !<org.redisson.codec.JsonJacksonCodec> {}
+
+# Threads
+threads: 16
+nettyThreads: 32
+
+# Transport mode
+transportMode: "NIO"

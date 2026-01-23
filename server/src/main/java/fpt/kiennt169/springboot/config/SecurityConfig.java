@@ -18,10 +18,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import fpt.kiennt169.springboot.filter.RateLimitingFilter;
 import fpt.kiennt169.springboot.services.TokenService;
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +36,7 @@ public class SecurityConfig {
     private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final RateLimitingFilter rateLimitingFilter;
 
     @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
     private String allowedOrigins;
@@ -110,6 +113,7 @@ public class SecurityConfig {
                     .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authenticationProvider(authenticationProvider())
+                    .addFilterBefore(rateLimitingFilter, SecurityContextHolderFilter.class)
                     .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
                     .exceptionHandling(exception -> exception
                             .authenticationEntryPoint(authenticationEntryPoint))

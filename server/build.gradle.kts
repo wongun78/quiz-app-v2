@@ -51,9 +51,14 @@ dependencies {
 	implementation("org.mapstruct:mapstruct:1.6.3")
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 
-	// Spring Data Redis with Lettuce
+	// Spring Data Redis with Lettuce (for refresh tokens)
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("io.lettuce:lettuce-core")
+
+	// Redisson + Bucket4j for distributed rate limiting
+	implementation("org.redisson:redisson-spring-boot-starter:3.27.2")
+	implementation("com.bucket4j:bucket4j-core:8.10.1")
+	implementation("com.bucket4j:bucket4j-redis:8.10.1")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
