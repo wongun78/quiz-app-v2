@@ -1,21 +1,9 @@
-/**
- * 🦕 Dino-Themed Custom SVG Icons
- * Modern, minimalist icons with prehistoric inspiration
- */
-
 export interface IconProps {
   size?: number;
   className?: string;
   color?: string;
 }
 
-// ========================================
-// NAVIGATION ICONS
-// ========================================
-
-/**
- * Dino Footprint Icon - Home/Landing
- */
 export const DinoFootprint = ({
   size = 24,
   className = "",
@@ -205,10 +193,6 @@ export const DinoEgg = ({
   </svg>
 );
 
-// ========================================
-// ACTION ICONS
-// ========================================
-
 /**
  * Dino Claw Play Icon - Start Quiz
  */
@@ -322,10 +306,6 @@ export const SpikeTailRetry = ({
     <path d="M18 16L19 14L20 16L19 18L18 16Z" fill={color} />
   </svg>
 );
-
-// ========================================
-// STATUS ICONS
-// ========================================
 
 /**
  * Shield Leaf Correct Icon
@@ -462,10 +442,6 @@ export const FossilLock = ({
   </svg>
 );
 
-// ========================================
-// EXPORT ICON MAP
-// ========================================
-
 export const DinoIcons = {
   footprint: DinoFootprint,
   fernLeaf: FernLeaf,
@@ -481,10 +457,6 @@ export const DinoIcons = {
 } as const;
 
 export type DinoIconName = keyof typeof DinoIcons;
-
-// ========================================
-// UNIFIED ICON COMPONENT
-// ========================================
 
 interface DinoIconProps extends IconProps {
   name: DinoIconName;

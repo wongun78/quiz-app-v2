@@ -1,14 +1,4 @@
-/**
- * 🦕 Dino-Green Design Tokens
- * Professional design system tokens for Quiz App
- */
-
-// ========================================
-// COLOR PALETTE
-// ========================================
-
 export const COLORS = {
-  // Primary - Dino-Green Spectrum
   dino: {
     primary: {
       900: "#0B4619", // Deep Forest
@@ -24,7 +14,6 @@ export const COLORS = {
     },
   },
 
-  // Secondary - Earthy Complements
   amber: {
     600: "#D97706", // Amber Sun
     500: "#F59E0B", // Golden Hour
@@ -45,7 +34,6 @@ export const COLORS = {
     100: "#E0F2FE", // Water Mist
   },
 
-  // Semantic Colors
   semantic: {
     success: "#1E8537", // dino-primary-600
     successLight: "#C7F0D2", // dino-primary-100
@@ -64,7 +52,6 @@ export const COLORS = {
     infoDark: "#0284C7", // Sky-600
   },
 
-  // Neutral - Professional grays with green undertone
   neutral: {
     950: "#0A0F0C", // Almost black with green hint
     900: "#1C2621", // Deep charcoal
@@ -80,26 +67,20 @@ export const COLORS = {
   },
 } as const;
 
-// ========================================
-// TYPOGRAPHY
-// ========================================
-
 export const TYPOGRAPHY = {
   fontFamily: {
     display:
       '"Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif',
     body: '"Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif',
     mono: '"JetBrains Mono", "Fira Code", "Consolas", monospace',
-    heading: '"Sora", "Inter", -apple-system, BlinkMacSystemFont, sans-serif', // Geometric, modern
+    heading: '"Sora", "Inter", -apple-system, BlinkMacSystemFont, sans-serif',
   },
 
   fontSize: {
-    // Display - Large headers
     displayXl: "3.75rem", // 60px
     displayLg: "3rem", // 48px
     displayMd: "2.25rem", // 36px
 
-    // Headings
     h1: "2.25rem", // 36px
     h2: "1.875rem", // 30px
     h3: "1.5rem", // 24px
@@ -107,7 +88,6 @@ export const TYPOGRAPHY = {
     h5: "1.125rem", // 18px
     h6: "1rem", // 16px
 
-    // Body
     lg: "1.125rem", // 18px
     base: "1rem", // 16px (default)
     sm: "0.875rem", // 14px
@@ -141,10 +121,6 @@ export const TYPOGRAPHY = {
     widest: "0.1em",
   },
 } as const;
-
-// ========================================
-// SPACING
-// ========================================
 
 export const SPACING = {
   px: "1px",
@@ -184,10 +160,6 @@ export const SPACING = {
   96: "24rem", // 384px
 } as const;
 
-// ========================================
-// BORDER RADIUS
-// ========================================
-
 export const RADIUS = {
   none: "0",
   sm: "0.25rem", // 4px - Subtle
@@ -200,10 +172,6 @@ export const RADIUS = {
   full: "9999px", // Pills, avatars
 } as const;
 
-// ========================================
-// SHADOWS
-// ========================================
-
 export const SHADOWS = {
   xs: "0 1px 2px 0 rgba(11, 70, 25, 0.05)",
   sm: "0 2px 4px -1px rgba(11, 70, 25, 0.08), 0 2px 3px -1px rgba(11, 70, 25, 0.06)",
@@ -215,16 +183,11 @@ export const SHADOWS = {
   inner: "inset 0 2px 4px 0 rgba(11, 70, 25, 0.06)",
   none: "0 0 #0000",
 
-  // Colored shadow for primary elements
   primary:
     "0 10px 20px -5px rgba(38, 164, 68, 0.3), 0 4px 6px -2px rgba(38, 164, 68, 0.15)",
   primaryLg:
     "0 20px 30px -10px rgba(38, 164, 68, 0.4), 0 8px 12px -4px rgba(38, 164, 68, 0.2)",
 } as const;
-
-// ========================================
-// ANIMATIONS
-// ========================================
 
 export const ANIMATION = {
   duration: {
@@ -244,10 +207,6 @@ export const ANIMATION = {
   },
 } as const;
 
-// ========================================
-// BREAKPOINTS
-// ========================================
-
 export const BREAKPOINTS = {
   sm: "640px", // Mobile landscape
   md: "768px", // Tablet portrait
@@ -255,10 +214,6 @@ export const BREAKPOINTS = {
   xl: "1280px", // Desktop
   "2xl": "1536px", // Large desktop
 } as const;
-
-// ========================================
-// Z-INDEX
-// ========================================
 
 export const Z_INDEX = {
   base: 0,
@@ -272,10 +227,6 @@ export const Z_INDEX = {
   notification: 1700,
 } as const;
 
-// ========================================
-// ICON SIZES
-// ========================================
-
 export const ICON_SIZES = {
   xs: 12,
   sm: 16,
@@ -285,10 +236,6 @@ export const ICON_SIZES = {
   xl: 48,
   "2xl": 64,
 } as const;
-
-// ========================================
-// COMPONENT TOKENS
-// ========================================
 
 export const COMPONENT_TOKENS = {
   button: {
@@ -321,15 +268,6 @@ export const COMPONENT_TOKENS = {
   },
 } as const;
 
-// ========================================
-// UTILITY FUNCTIONS
-// ========================================
-
-/**
- * Get color with opacity
- * @param color Hex color
- * @param opacity Opacity value (0-1)
- */
 export const withOpacity = (color: string, opacity: number): string => {
   const hex = color.replace("#", "");
   const r = Number.parseInt(hex.substring(0, 2), 16);
@@ -338,10 +276,6 @@ export const withOpacity = (color: string, opacity: number): string => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
-/**
- * Get contrast color (black or white) based on background
- * @param hexColor Background color in hex
- */
 export const getContrastColor = (hexColor: string): string => {
   const hex = hexColor.replace("#", "");
   const r = Number.parseInt(hex.substring(0, 2), 16);
@@ -351,7 +285,6 @@ export const getContrastColor = (hexColor: string): string => {
   return yiq >= 128 ? COLORS.neutral[900] : COLORS.neutral[50];
 };
 
-// Export all tokens as a single object
 export const DESIGN_TOKENS = {
   colors: COLORS,
   typography: TYPOGRAPHY,

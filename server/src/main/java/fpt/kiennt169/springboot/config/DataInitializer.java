@@ -24,10 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 
-/**
- * Database initializer that runs on application startup.
- * Creates sample quizzes and questions if they don't exist.
- */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -68,9 +64,6 @@ public class DataInitializer {
         };
     }
 
-    /**
-     * Initialize system roles
-     */
     private void initRoles() {
         if (roleRepository.count() == 0) {
             Role adminRole = new Role();
@@ -105,9 +98,6 @@ public class DataInitializer {
         }
     }
 
-    /**
-     * Initialize sample users
-     */
     private void initUsers() {
         if (userRepository.count() == 0) {
             Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
@@ -142,9 +132,6 @@ public class DataInitializer {
         }
     }
 
-    /**
-     * Initialize sample quizzes with questions
-     */
     private void initQuizzes() {
         if (quizRepository.count() > 0) return;
 

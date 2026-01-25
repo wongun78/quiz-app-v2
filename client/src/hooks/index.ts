@@ -1,11 +1,5 @@
-/**
- * Re-export useAuth from contexts for convenience
- */
 export { useAuth } from "@/contexts";
 
-/**
- * Quiz hooks - Query & Mutations
- */
 export {
   useQuizzes,
   useQuiz,
@@ -14,9 +8,6 @@ export {
   useDeleteQuiz,
 } from "./useQuiz";
 
-/**
- * Question hooks - Query & Mutations
- */
 export {
   useQuestions,
   useQuestion,
@@ -25,9 +16,6 @@ export {
   useDeleteQuestion,
 } from "./useQuestions";
 
-/**
- * Role hooks - Query & Mutations
- */
 export {
   useRoles,
   useRole,
@@ -36,9 +24,6 @@ export {
   useDeleteRole,
 } from "./useRole";
 
-/**
- * User hooks - Query & Mutations
- */
 export {
   useUsers,
   useUser,
@@ -47,12 +32,6 @@ export {
   useDeleteUser,
 } from "./useUsers";
 
-/**
- * Permission hooks
- */
 export { usePermission } from "./usePermission";
 
-/**
- * Theme hook (re-export from contexts)
- */
 export { useTheme } from "@/contexts";
