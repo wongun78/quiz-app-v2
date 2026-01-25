@@ -1,5 +1,7 @@
 package fpt.kiennt169.springboot.config;
 
+import io.github.bucket4j.distributed.proxy.ProxyManager;
+import io.github.bucket4j.redis.redisson.cas.RedissonBasedProxyManager;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -12,35 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
-/**
- * Redisson Configuration for Distributed Rate Limiting
- * 
- * Purpose: Configure Redisson client for Bucket4j rate limiting
- * 
- * Why Redisson for Rate Limiting:
- * - Built-in distributed rate limiter support
- * - Atomic operations for bucket tokens
- * - High performance for rate limiting use case
- * - Thread-safe across multiple instances
- * 
- * Separate from Lettuce (refresh tokens) because:
- * - Lettuce: Simple CRUD operations, native Spring integration
- * - Redisson: Advanced features (rate limiting, distributed locks)
- * 
- * @author Quiz Team
- * @version 2.0.0
- */
 @Slf4j
 @Configuration
 public class RedissonConfig {
 
-    /**
-     * Create RedissonClient for rate limiting operations
-     * Loads configuration from redisson-config.yml
-     * 
-     * @return configured RedissonClient instance
-     * @throws IOException if config file cannot be read
-     */
     @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient() throws IOException {
         log.info("Initializing Redisson client for rate limiting");
@@ -53,15 +30,18 @@ public class RedissonConfig {
         return client;
     }
 
-    /**
-     * Optional: RedissonConnectionFactory for Spring Data Redis compatibility
-     * Only create if you need Redisson features with Spring Data Redis
-     * 
-     * @param redissonClient the Redisson client
-     * @return RedissonConnectionFactory
-     */
     @Bean
     public RedissonConnectionFactory redissonConnectionFactory(RedissonClient redissonClient) {
         return new RedissonConnectionFactory(redissonClient);
+    }
+
+    @Bean
+    public ProxyManager<String> bucket4jProxyManager(RedissonClient redissonClient) {
+        log.info("Creating Bucket4j ProxyManager with Redisson backend");
+        
+        Redisson redisson = (Redisson) redissonClient;
+        
+        return RedissonBasedProxyManager.builderFor(redisson.getCommandExecutor())
+                .build();
     }
 }

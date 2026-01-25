@@ -3,7 +3,6 @@ package fpt.kiennt169.springboot.services;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
@@ -58,8 +57,6 @@ public class TokenServiceImpl implements TokenService {
     
     @Override
     public String generateRefreshToken() {
-        // Generate cryptographically strong random token using UUID
-        // No JWT needed - Redis is the source of truth
         return java.util.UUID.randomUUID().toString().replace("-", "");
     }
 

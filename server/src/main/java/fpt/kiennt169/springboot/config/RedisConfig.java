@@ -7,7 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,8 +73,7 @@ public class RedisConfig {
             ObjectMapper.DefaultTyping.NON_FINAL
         );
         
-        GenericJackson2JsonRedisSerializer jsonSerializer = 
-            new GenericJackson2JsonRedisSerializer(objectMapper);
+        RedisSerializer<Object> jsonSerializer = new CustomJacksonRedisSerializer(objectMapper);
         
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
         
