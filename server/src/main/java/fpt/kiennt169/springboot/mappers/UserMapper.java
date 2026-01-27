@@ -26,7 +26,6 @@ public interface UserMapper {
     @Mapping(target = "phoneNumber", ignore = true)
     @Mapping(target = "roles", ignore = true) 
     @Mapping(target = "submissions", ignore = true)
-    @Mapping(target = "refreshToken", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isDeleted", ignore = true)

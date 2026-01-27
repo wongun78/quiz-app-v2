@@ -13,6 +13,8 @@ import fpt.kiennt169.springboot.repositories.RoleRepository;
 import fpt.kiennt169.springboot.repositories.UserRepository;
 import fpt.kiennt169.springboot.specifications.UserSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -137,6 +139,10 @@ public class UserServiceImpl implements UserService {
         return updateWithDTO(user, updateDTO);
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "users", key = "#user.id"),
+        @CacheEvict(value = "users", key = "#user.email")
+    })
     private UserResponseDTO updateWithDTO(User user, UserUpdateDTO updateDTO) {
         if (updateDTO.email() != null && !user.getEmail().equals(updateDTO.email()) && userRepository.existsByEmail(updateDTO.email())) {
             throw new EmailAlreadyExistsException(updateDTO.email());
@@ -159,6 +165,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#id")
     public void delete(UUID id) {
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User", "id", id);

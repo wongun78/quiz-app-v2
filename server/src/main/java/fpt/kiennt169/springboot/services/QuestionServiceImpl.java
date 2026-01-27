@@ -13,6 +13,7 @@ import fpt.kiennt169.springboot.repositories.AnswerRepository;
 import fpt.kiennt169.springboot.repositories.QuestionRepository;
 import fpt.kiennt169.springboot.specifications.QuestionSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -90,6 +91,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "questions", key = "#id")
     public QuestionResponseDTO update(UUID id, QuestionRequestDTO requestDTO) {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ENTITY_NAME, "id", id));
@@ -135,6 +137,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @CacheEvict(value = "questions", key = "#id")
     public void delete(UUID id) {
         Question question = questionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(ENTITY_NAME, "id", id));

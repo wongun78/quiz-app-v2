@@ -7,6 +7,8 @@ import fpt.kiennt169.springboot.entities.Role;
 import fpt.kiennt169.springboot.exceptions.ResourceNotFoundException;
 import fpt.kiennt169.springboot.repositories.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -84,6 +86,10 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "roles", key = "#id"),
+        @CacheEvict(value = "roles", key = "#requestDTO.name().name()")
+    })
     public RoleResponseDTO update(UUID id, RoleRequestDTO requestDTO) {
         Role role = roleRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id));
@@ -95,6 +101,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "roles", allEntries = true)
     public void delete(UUID id) {
         if (!roleRepository.existsById(id)) {
             throw new ResourceNotFoundException("Role", "id", id);

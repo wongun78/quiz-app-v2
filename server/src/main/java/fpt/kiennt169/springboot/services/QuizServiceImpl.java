@@ -12,6 +12,8 @@ import fpt.kiennt169.springboot.repositories.QuestionRepository;
 import fpt.kiennt169.springboot.repositories.QuizRepository;
 import fpt.kiennt169.springboot.specifications.QuizSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -79,6 +81,10 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "quizzes", key = "#id"),
+        @CacheEvict(value = "quizzes", key = "'exam::' + #id")
+    })
     public QuizResponseDTO update(UUID id, QuizRequestDTO requestDTO) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
@@ -90,6 +96,10 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "quizzes", key = "#id"),
+        @CacheEvict(value = "quizzes", key = "'exam::' + #id")
+    })
     public void delete(UUID id) {
         if (!quizRepository.existsById(id)) {
             throw new ResourceNotFoundException("Quiz", "id", id);
@@ -98,6 +108,11 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "quizzes", key = "#quizId"),
+        @CacheEvict(value = "quizzes", key = "'exam::' + #quizId"),
+        @CacheEvict(value = "questions", key = "'quiz::' + #quizId")
+    })
     public QuizDetailResponseDTO addQuestions(UUID quizId, java.util.List<UUID> questionIds) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
@@ -112,6 +127,11 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "quizzes", key = "#quizId"),
+        @CacheEvict(value = "quizzes", key = "'exam::' + #quizId"),
+        @CacheEvict(value = "questions", key = "'quiz::' + #quizId")
+    })
     public void removeQuestion(UUID quizId, UUID questionId) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));

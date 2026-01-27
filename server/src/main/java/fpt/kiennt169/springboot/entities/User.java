@@ -1,5 +1,6 @@
 package fpt.kiennt169.springboot.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -51,14 +52,15 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Boolean active = true;
     
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = new HashSet<>();
+    private Set<Role> roles = new HashSet();
     
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private Set<QuizSubmission> submissions = new HashSet<>();
 }

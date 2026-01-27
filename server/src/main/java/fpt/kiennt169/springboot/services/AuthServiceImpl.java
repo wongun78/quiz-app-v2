@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import fpt.kiennt169.springboot.dtos.users.AuthResponseDTO;
 import fpt.kiennt169.springboot.dtos.users.LoginRequestDTO;
 import fpt.kiennt169.springboot.dtos.users.RegisterRequestDTO;
+import fpt.kiennt169.springboot.dtos.users.UserResponseDTO;
 import fpt.kiennt169.springboot.entities.RefreshToken;
 import fpt.kiennt169.springboot.entities.Role;
 import fpt.kiennt169.springboot.entities.User;
@@ -61,9 +62,26 @@ public class AuthServiceImpl implements AuthService {
             User user = userRepository.findByEmail(loginRequest.email())
                     .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.email()));
 
+            // Force initialization of roles collection before transaction ends
+            user.getRoles().size(); // Trigger lazy loading if needed
+            
             Set<String> roleNames = user.getRoles().stream()
                     .map(role -> role.getName().name())
                     .collect(Collectors.toSet());
+            
+            // Create UserResponseDTO manually INSIDE transaction to avoid LazyInitializationException
+            UserResponseDTO userResponseDTO = new UserResponseDTO(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getUsername(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getFullName(),
+                    user.getDateOfBirth(),
+                    user.getPhoneNumber(),
+                    user.getActive(),
+                    roleNames  // Already extracted above
+            );
             
             String token = tokenService.generateToken(user, roleNames);
             String refreshTokenString = tokenService.generateRefreshToken();
@@ -84,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
             return new AuthResponseDTO(
                     token,
                     refreshTokenString,
-                    userMapper.toResponseDTO(user),
+                    userResponseDTO,  // Use manually created DTO
                     roleNames
             );
 

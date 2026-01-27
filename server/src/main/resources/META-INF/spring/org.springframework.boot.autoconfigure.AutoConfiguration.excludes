@@ -1,0 +1,3 @@
+org.redisson.spring.starter.RedissonAutoConfiguration
+org.redisson.spring.starter.RedissonAutoConfigurationV2
+org.redisson.spring.data.connection.RedissonConnectionConfiguration
