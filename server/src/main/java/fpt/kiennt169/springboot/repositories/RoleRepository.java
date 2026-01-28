@@ -12,7 +12,7 @@ import java.util.UUID;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, UUID> {
 
-    @Cacheable(value = "roles", key = "#name.name()")
+    @Cacheable(value = "roles", key = "#name != null ? #name.name() : 'null'")
     Optional<Role> findByName(RoleEnum name);
 
     @Cacheable(value = "roles", key = "#id")

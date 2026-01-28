@@ -1,6 +1,7 @@
 package fpt.kiennt169.springboot.entities;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,6 +34,7 @@ public class Question extends BaseEntity {
     @Column(nullable = false)
     private Integer score;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "questions", fetch = FetchType.LAZY)
     private Set<Quiz> quizzes = new HashSet<>();
     

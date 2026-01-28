@@ -95,7 +95,7 @@ const Navbar = () => {
 
         <div className="flex items-center gap-4">
           {/* Theme Toggle */}
-          <div className="transition-all hover:rotate-12 hover:text-primary">
+          <div className="flex items-center transition-all hover:rotate-12 hover:text-primary">
             <ThemeToggle variant="icon" />
           </div>
 

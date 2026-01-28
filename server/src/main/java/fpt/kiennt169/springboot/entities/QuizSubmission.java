@@ -1,6 +1,7 @@
 package fpt.kiennt169.springboot.entities;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,10 +29,12 @@ public class QuizSubmission extends BaseEntity {
     @Column(name = "submission_time", nullable = false)
     private LocalDateTime submissionTime;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id", nullable = false)
     private Quiz quiz;

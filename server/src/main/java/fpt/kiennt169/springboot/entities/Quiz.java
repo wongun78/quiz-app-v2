@@ -1,6 +1,7 @@
 package fpt.kiennt169.springboot.entities;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,7 @@ public class Quiz extends BaseEntity {
     )
     private List<Question> questions = new ArrayList<>();
     
+    @JsonIgnore
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizSubmission> submissions;
 }

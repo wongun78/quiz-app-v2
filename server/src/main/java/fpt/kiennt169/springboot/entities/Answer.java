@@ -1,6 +1,7 @@
 package fpt.kiennt169.springboot.entities;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public class Answer extends BaseEntity {
     @Column(name = "is_correct", nullable = false)
     private Boolean isCorrect = false;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
