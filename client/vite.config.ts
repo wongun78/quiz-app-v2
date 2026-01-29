@@ -5,6 +5,7 @@ import path from "node:path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "https://storage.googleapis.com/gen-lang-client-0115774747-frontend/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

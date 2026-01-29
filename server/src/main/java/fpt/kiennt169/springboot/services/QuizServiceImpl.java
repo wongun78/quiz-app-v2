@@ -66,6 +66,7 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable(value = "quizzes", key = "'basic::' + #id")
     public QuizResponseDTO getById(UUID id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
@@ -74,6 +75,7 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable(value = "quizzes", key = "'details::' + #id")
     public QuizDetailResponseDTO getWithQuestions(UUID id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
@@ -82,7 +84,8 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "quizzes", key = "#id"),
+        @CacheEvict(value = "quizzes", key = "'basic::' + #id"),
+        @CacheEvict(value = "quizzes", key = "'details::' + #id"),
         @CacheEvict(value = "quizzes", key = "'exam::' + #id")
     })
     public QuizResponseDTO update(UUID id, QuizRequestDTO requestDTO) {
@@ -97,7 +100,7 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "quizzes", key = "#id"),
+        @CacheEvict(value = "quizzes", key = "'details::' + #id"),
         @CacheEvict(value = "quizzes", key = "'exam::' + #id")
     })
     public void delete(UUID id) {
@@ -109,7 +112,7 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "quizzes", key = "#quizId"),
+        @CacheEvict(value = "quizzes", key = "'details::' + #quizId"),
         @CacheEvict(value = "quizzes", key = "'exam::' + #quizId"),
         @CacheEvict(value = "questions", key = "'quiz::' + #quizId")
     })
@@ -128,7 +131,7 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "quizzes", key = "#quizId"),
+        @CacheEvict(value = "quizzes", key = "'details::' + #quizId"),
         @CacheEvict(value = "quizzes", key = "'exam::' + #quizId"),
         @CacheEvict(value = "questions", key = "'quiz::' + #quizId")
     })

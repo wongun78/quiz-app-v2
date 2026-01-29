@@ -8,6 +8,7 @@ import fpt.kiennt169.springboot.exceptions.ResourceNotFoundException;
 import fpt.kiennt169.springboot.repositories.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -78,6 +79,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "roles", key = "#id")
     public RoleResponseDTO getById(UUID id) {
         Role role = roleRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id));

@@ -3,7 +3,6 @@ package fpt.kiennt169.springboot.repositories;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,12 +18,10 @@ import fpt.kiennt169.springboot.entities.Quiz;
 @Repository
 public interface QuizRepository extends JpaRepository<Quiz, UUID>, JpaSpecificationExecutor<Quiz> {
 
-    @Cacheable(value = "quizzes", key = "#id")
     @EntityGraph(attributePaths = {"questions"})
     @Override
     Optional<Quiz> findById(UUID id);
    
-    @Cacheable(value = "quizzes", key = "'exam::' + #id")
     @Query("SELECT q FROM Quiz q LEFT JOIN FETCH q.questions qs LEFT JOIN FETCH qs.answers WHERE q.id = :id")
     Optional<Quiz> findByIdWithQuestionsAndAnswers(@Param("id") UUID id);
     

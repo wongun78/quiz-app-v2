@@ -239,7 +239,7 @@ public class QuizController {
             @Parameter(description = "Quiz ID", required = true)
             @PathVariable("quizId") UUID quizId) {
         QuizDetailResponseDTO quiz = quizService.getWithQuestions(quizId);
-        return ResponseEntity.ok(ApiResponse.success(quiz.questions(), messageUtil.getMessage("success.quiz.questions_retrieved")));
+        return ResponseEntity.ok(ApiResponse.success(quiz.getQuestions(), messageUtil.getMessage("success.quiz.questions_retrieved")));
     }
 
     @Operation(

@@ -1,7 +1,6 @@
 package fpt.kiennt169.springboot.repositories;
 
 import fpt.kiennt169.springboot.entities.User;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -16,12 +15,9 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
-    // Removed @Cacheable to avoid LazyInitializationException when deserializing from Redis
-    // User entities have complex relationships that don't serialize well
     @EntityGraph(attributePaths = {"roles"})
     Optional<User> findById(UUID id);
 
-    // Removed @Cacheable to avoid LazyInitializationException when deserializing from Redis
     @EntityGraph(attributePaths = {"roles"})
     Optional<User> findByEmail(String email);
 

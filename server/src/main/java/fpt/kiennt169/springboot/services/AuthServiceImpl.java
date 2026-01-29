@@ -62,14 +62,13 @@ public class AuthServiceImpl implements AuthService {
             User user = userRepository.findByEmail(loginRequest.email())
                     .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.email()));
 
-            // Force initialization of roles collection before transaction ends
-            user.getRoles().size(); // Trigger lazy loading if needed
+            int roleCount = user.getRoles().size(); 
+            log.debug("User has {} roles", roleCount);
             
             Set<String> roleNames = user.getRoles().stream()
                     .map(role -> role.getName().name())
                     .collect(Collectors.toSet());
             
-            // Create UserResponseDTO manually INSIDE transaction to avoid LazyInitializationException
             UserResponseDTO userResponseDTO = new UserResponseDTO(
                     user.getId(),
                     user.getEmail(),
@@ -80,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
                     user.getDateOfBirth(),
                     user.getPhoneNumber(),
                     user.getActive(),
-                    roleNames  // Already extracted above
+                    roleNames  
             );
             
             String token = tokenService.generateToken(user, roleNames);
@@ -102,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
             return new AuthResponseDTO(
                     token,
                     refreshTokenString,
-                    userResponseDTO,  // Use manually created DTO
+                    userResponseDTO, 
                     roleNames
             );
 

@@ -58,7 +58,6 @@ export function Breadcrumbs({
     >
       {breadcrumbs.map((item, index) => {
         const isLast = index === breadcrumbs.length - 1;
-        const isHome = index === 0;
 
         return (
           <div key={item.path} className="flex items-center">

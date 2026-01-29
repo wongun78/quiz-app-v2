@@ -88,6 +88,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable(value = "users", key = "#id")
     public UserResponseDTO getById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
@@ -105,6 +106,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @org.springframework.cache.annotation.CacheEvict(value = "users", key = "#id")
     public UserResponseDTO update(UUID id, UserRequestDTO requestDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
