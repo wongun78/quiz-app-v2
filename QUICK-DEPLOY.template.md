@@ -2,7 +2,7 @@
 
 > **⚠️ IMPORTANT**: Copy `.env.example` to `.env` and fill in your actual values before running any scripts!
 
-## 🚀 One-Command Deploy
+## One-Command Deploy
 
 ### Full Fresh Deployment
 
@@ -50,7 +50,7 @@ gsutil cp dist/index.html gs://${BUCKET_NAME}/index.html
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
 All sensitive configuration is in `.env` file (NOT committed to git):
 
@@ -66,7 +66,7 @@ BACKEND_URL=your-backend-url
 
 ---
 
-## 🛠️ Common Tasks
+## Common Tasks
 
 ### View Backend Logs
 
@@ -94,7 +94,7 @@ gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" gs://${BUC
 
 ---
 
-## ⚡ Emergency Fixes
+## Emergency Fixes
 
 ### Backend 500 Error
 
@@ -128,7 +128,7 @@ gcloud run services update quiz-backend --region ${GCP_REGION} --update-env-vars
 
 ---
 
-## 📊 Cost Monitoring
+## Cost Monitoring
 
 ```bash
 # View current month costs
@@ -146,7 +146,7 @@ gcloud beta billing projects describe ${GCP_PROJECT_ID}
 
 ---
 
-## 🔒 Security Notes
+## Security Notes
 
 1. **Never commit `.env` file** - Already in .gitignore
 2. **Rotate JWT_SECRET regularly** - Update in .env and redeploy
@@ -156,7 +156,7 @@ gcloud beta billing projects describe ${GCP_PROJECT_ID}
 
 ---
 
-## 📚 Resources
+## Resources
 
 - Deployment Guide: See `DEPLOYMENT-GUIDE.md`
 - Production Summary: See `PRODUCTION-SUMMARY.md`

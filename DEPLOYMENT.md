@@ -1,6 +1,6 @@
 # Deployment Setup Guide
 
-## 🔐 Security First - Environment Configuration
+## Security First - Environment Configuration
 
 This project uses environment variables for all sensitive data. **Never commit credentials to git!**
 
@@ -56,7 +56,7 @@ openssl rand -base64 32
 
 ---
 
-## 🚀 Deployment Steps
+## Deployment Steps
 
 ### Prerequisites
 
@@ -81,7 +81,7 @@ This creates:
 - VPC Connector
 - Firewall rules
 
-**⏱️ Duration:** ~10-15 minutes
+**Duration:** ~10-15 minutes
 
 After completion, update your `.env` with:
 
@@ -101,7 +101,7 @@ After deployment, copy the backend URL and update `.env`:
 BACKEND_URL=https://quiz-backend-xxxx.run.app
 ```
 
-**⏱️ Duration:** ~5-7 minutes
+**Duration:** ~5-7 minutes
 
 ### 3. Deploy Frontend
 
@@ -118,11 +118,11 @@ chmod +x deploy-frontend-gcs.sh
 ./deploy-frontend-gcs.sh
 ```
 
-**⏱️ Duration:** ~2-3 minutes
+**Duration:** ~2-3 minutes
 
 ---
 
-## ✅ Verification
+## Verification
 
 ### Test Backend
 
@@ -143,7 +143,7 @@ https://storage.googleapis.com/${BUCKET_NAME}/index.html
 
 ---
 
-## 📊 Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -170,13 +170,13 @@ https://storage.googleapis.com/${BUCKET_NAME}/index.html
 
 ---
 
-## 🔒 Security Best Practices
+## Security Best Practices
 
-1. ✅ **Environment Variables**: All secrets in `.env` (gitignored)
-2. ✅ **Private Database**: Cloud SQL with private IP only
-3. ✅ **VPC Network**: Isolated network for backend resources
-4. ✅ **JWT Authentication**: Secure token-based auth
-5. ✅ **HTTPS Only**: All traffic encrypted
+1. **Environment Variables**: All secrets in `.env` (gitignored)
+2. **Private Database**: Cloud SQL with private IP only
+3. **VPC Network**: Isolated network for backend resources
+4. **JWT Authentication**: Secure token-based auth
+5. **HTTPS Only**: All traffic encrypted
 
 ### Additional Security (Optional)
 
@@ -192,7 +192,7 @@ gcloud billing budgets create --billing-account=YOUR_BILLING_ACCOUNT \
 
 ---
 
-## 💰 Cost Estimation
+## Cost Estimation
 
 **Monthly Cost:** ~$85 USD
 
@@ -213,7 +213,7 @@ gcloud billing budgets create --billing-account=YOUR_BILLING_ACCOUNT \
 
 ---
 
-## 🛠️ Maintenance
+## Maintenance
 
 ### Update Backend Code
 
@@ -244,7 +244,7 @@ gcloud sql backups list --instance=quiz-sql-db
 
 ---
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Backend Won't Start
 
@@ -280,7 +280,7 @@ gsutil iam ch allUsers:objectViewer gs://${BUCKET_NAME}
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 - [Google Cloud Run Docs](https://cloud.google.com/run/docs)
 - [Cloud SQL Best Practices](https://cloud.google.com/sql/docs/postgres/best-practices)
@@ -289,7 +289,7 @@ gsutil iam ch allUsers:objectViewer gs://${BUCKET_NAME}
 
 ---
 
-## 🔄 CI/CD Integration (Future)
+## CI/CD Integration (Future)
 
 You can integrate these scripts with GitHub Actions:
 

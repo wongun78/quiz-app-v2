@@ -4,8 +4,8 @@
 if [ -f .env ]; then
     export $(cat .env | grep -v '^#' | xargs)
 else
-    echo "❌ Error: .env file not found!"
-    echo "📝 Please copy .env.example to .env and fill in your configuration"
+    echo "Error: .env file not found!"
+    echo "Please copy .env.example to .env and fill in your configuration"
     exit 1
 fi
 
@@ -28,7 +28,7 @@ REDIS_PORT="${REDIS_PORT}"
 # JWT Secret (from .env)
 JWT_SECRET="${JWT_SECRET}"
 
-echo "🏗️  Building Docker image..."
+echo "Building Docker image..."
 cd server
 gcloud builds submit --tag $IMAGE_NAME
 
