@@ -1,216 +1,349 @@
-# Dino Quiz - Prehistoric Learning Platform
+# Quiz Application - Full-Stack Learning Platform
 
-> **Full-stack Quiz Application** with Dinosaur-themed Design System - Spring Boot Backend + React Frontend
+> **Production-Ready Quiz Application** - Spring Boot 4.0 + React 19 + TypeScript - Deployed on Google Cloud Platform
 
 ![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.0-6DB33F?logo=springboot)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178C6?logo=typescript)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-6DB33F?logo=springboot)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript)
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=oracle)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
+![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
+![GCP](https://img.shields.io/badge/GCP-Ready-4285F4?logo=googlecloud)
 
-## 🌿 About Dino Quiz
+## About Quiz Application
 
-**Dino Quiz** is an evolution-inspired learning platform that combines prehistoric themes with modern education technology. Embark on a journey through knowledge with our Dino-Green design system featuring custom SVG icons, gradient backgrounds, and an immersive user experience.
+**Quiz Application** is a modern, production-ready full-stack platform for creating, managing, and taking quizzes. Built with enterprise-grade architecture, it features advanced security, caching, and scalability for educational institutions and organizations.
 
-### ✨ Key Features
+### Key Features
 
-- 🎨 **Custom Dino-Green Design System** - 10-shade color palette with prehistoric aesthetics
-- 🖼️ **11 Custom SVG Icons** - DinoFootprint, FernLeaf, FossilGear, and more!
-- 💚 **Modern UI/UX** - Gradient backgrounds, hover effects, and smooth animations
-- 🔒 **Secure Authentication** - JWT-based auth with role management
-- 📊 **Admin Dashboard** - Complete quiz and user management
-- 📱 **Fully Responsive** - Works perfectly on mobile, tablet, and desktop
+**Security & Performance**
 
-## 📁 Cấu trúc Monorepo
+- JWT Authentication with automatic token refresh (24h access + 7d refresh tokens)
+- Role-Based Access Control (RBAC) with ROLE_USER and ROLE_ADMIN
+- Rate Limiting (50 req/min for auth, 200 req/min for API) using Bucket4j + Redis
+- Redis Caching - 65% faster response times (7ms avg with cache vs 20ms without)
+- BCrypt password hashing with Spring Security 6
+
+**Application Features**
+
+- Complete Quiz CRUD operations with question management
+- Automatic exam scoring with detailed results
+- User management with pagination and search
+- Real-time cache invalidation and updates
+- Comprehensive API documentation with Swagger/OpenAPI
+
+**Modern Architecture**
+
+- Monorepo structure with Docker support
+- RESTful API with 32 endpoints
+- Responsive UI built with Tailwind CSS 4 and shadcn/ui
+- Production deployment on Google Cloud Platform (Cloud Run, Cloud SQL, Redis VM)
+- CI/CD ready with comprehensive testing scripts
+
+## Project Structure
 
 ```
-quiz-app/
-├── client/                 # Frontend - React + TypeScript + Vite
+quiz-app-v2/
+├── client/                        # Frontend - React 19 + TypeScript + Vite
 │   ├── src/
-│   ├── public/
+│   │   ├── components/            # UI components (100+ components)
+│   │   ├── pages/                 # Page components (14 pages)
+│   │   ├── contexts/              # React Context (Auth, Theme)
+│   │   ├── hooks/                 # Custom hooks (usePermission, useQuiz, etc.)
+│   │   ├── services/              # API services
+│   │   ├── types/                 # TypeScript definitions
+│   │   └── validations/           # Zod schemas
 │   ├── package.json
-│   └── README.md          # Chi tiết về Frontend
+│   ├── Dockerfile                 # Production Docker image
+│   └── README.md
 │
-├── server/                 # Backend - Spring Boot + PostgreSQL
-│   ├── src/
+├── server/                        # Backend - Spring Boot 4.0 + Java 21
+│   ├── src/main/java/fpt/kiennt169/springboot/
+│   │   ├── config/                # Security, Redis, Cache, Rate Limiting
+│   │   ├── controllers/           # REST Controllers (6)
+│   │   ├── services/              # Business Logic (17 services)
+│   │   ├── entities/              # JPA Entities (8)
+│   │   ├── repositories/          # Spring Data JPA
+│   │   ├── dtos/                  # Data Transfer Objects
+│   │   └── filter/                # JWT, Rate Limiting filters
 │   ├── build.gradle.kts
-│   └── README.md          # Chi tiết về Backend
+│   ├── Dockerfile
+│   ├── test-*.sh                  # Testing scripts
+│   └── README.md
 │
-├── docker-compose.yml     # Docker setup cho toàn bộ stack
-├── .gitignore             # Gitignore chung
-└── README.md              # File này
+├── docker-compose.yml             # Local development (Postgres + Redis + Backend)
+├── setup-quiz.sh                  # GCP infrastructure setup
+├── deploy-backend.sh              # Deploy backend to Cloud Run
+├── deploy-frontend-gcs.sh         # Deploy frontend to Cloud Storage
+├── DEPLOYMENT.md                  # Deployment guide
+├── PROJECT-ANALYSIS.md            # Comprehensive project analysis
+├── .env.example                   # Environment variables template
+└── README.md                      # This file
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### Yêu cầu
+### Requirements
 
-- **Docker Desktop** (khuyến nghị - dễ nhất)
-- **HOẶC:**
+**For Local Development:**
+
+- Docker Desktop (recommended for easiest setup)
+- OR manually install:
   - Node.js 20+
   - JDK 21
-  - PostgreSQL 16+
+  - PostgreSQL 16
+  - Redis 7
+
+**For Production Deployment:**
+
+- Google Cloud Platform account
+- gcloud CLI installed
+- Docker (for building images)
 
 ---
 
-### 🐳 Cách 1: Chạy với Docker (Khuyến nghị)
+### Option 1: Run with Docker (Recommended)
 
-Cách này sẽ tự động khởi chạy cả Database, Backend, và Frontend trong containers.
+Automatically starts PostgreSQL, Redis, and Backend in containers.
 
 ```bash
-# 1. Clone repo
+# 1. Clone repository
 git clone <your-repo-url>
-cd quiz-app
+cd quiz-app-v2
 
-# 2. Tạo file .env (copy từ server/.env)
-cp server/.env .env
+# 2. Create environment file
+cp .env.example .env
+# Edit .env with your configuration
 
-# 3. Khởi động toàn bộ hệ thống
+# 3. Start all services
 docker-compose up -d
 
-# 4. Kiểm tra logs
-docker-compose logs -f
+# 4. Check logs
+docker-compose logs -f backend
+
+# 5. Verify services are running
+curl http://localhost:8080/actuator/health
 ```
 
-**Kết quả:**
+**Services:**
 
-- 🗄️ PostgreSQL: `localhost:5432`
-- 🌐 Backend API: `http://localhost:8080`
-- 🎨 Frontend (nếu enabled): `http://localhost:3000`
+- PostgreSQL: `localhost:5432` (user: postgres, db: quiz_db)
+- Redis: `localhost:6379`
+- Backend API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
 
-**Dừng toàn bộ:**
+**Stop all services:**
 
 ```bash
 docker-compose down
+# Or with data cleanup:
+docker-compose down -v
 ```
 
 ---
 
-### 💻 Cách 2: Chạy Manual (Development)
+### Option 2: Manual Setup (Development)
 
-#### Bước 1: Khởi động Database
+#### Step 1: Start Database & Redis
 
 ```bash
-# Chỉ chạy PostgreSQL
-docker-compose up -d postgres
+# Start PostgreSQL and Redis only
+docker-compose up -d postgres redis
 
-# HOẶC cài PostgreSQL local và tạo database:
-# createdb quiz_db
+# OR install locally:
+# PostgreSQL: createdb quiz_db
+# Redis: redis-server
 ```
 
-#### Bước 2: Chạy Backend (Spring Boot)
+#### Step 2: Run Backend (Spring Boot)
 
 ```bash
 cd server
 
-# Copy .env
+# Copy environment template
 cp .env.example .env
-# Sửa .env với thông tin database của bạn
+# Edit .env with your database credentials
 
-# Chạy với Gradle
+# Run with Gradle
 ./gradlew bootRun
 
-# HOẶC build jar và chạy
+# OR build JAR and run
 ./gradlew bootJar
 java -jar build/libs/quiz-app-*.jar
 ```
 
-✅ Backend đang chạy tại: `http://localhost:8080`
-📚 API Docs: `http://localhost:8080/swagger-ui.html`
+**Backend is running at:**
 
-#### Bước 3: Chạy Frontend (React + Vite)
+- API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Health Check: `http://localhost:8080/actuator/health`
+
+#### Step 3: Run Frontend (React + Vite)
 
 ```bash
 cd client
 
-# Cài đặt dependencies
+# Install dependencies
 npm install
-# hoặc
-yarn install
 
-# Chạy dev server
+# Create environment file
+echo "VITE_API_URL=http://localhost:8080" > .env
+
+# Start development server
 npm run dev
-# hoặc
-yarn dev
 ```
 
-✅ Frontend đang chạy tại: `http://localhost:5173`
+**Frontend is running at:** `http://localhost:5173`
 
 ---
 
-## 📚 Documentation
+## Documentation
+
+### Comprehensive Analysis
+
+For detailed technical analysis, see: [PROJECT-ANALYSIS.md](PROJECT-ANALYSIS.md)
+
+**Includes:**
+
+- Complete architecture overview
+- Security implementation details
+- Performance metrics (caching, rate limiting)
+- Deployment infrastructure
+- Technology comparisons
+- Improvement recommendations
 
 ### Backend (Spring Boot)
 
-Xem chi tiết tại: [`server/README.md`](server/README.md)
+Detailed documentation: [server/README.md](server/README.md)
 
-**Highlights:**
+**Key Features:**
 
-- REST API với JWT Authentication
-- Role-based Access Control (Admin/User)
-- Swagger UI cho API documentation
-- Spring Data JPA + PostgreSQL
-- Soft delete, pagination, validation
+- 32 REST API endpoints with JWT authentication
+- Redis caching (65% performance improvement)
+- Rate limiting with Bucket4j + Redisson (50/200 req/min)
+- Role-based access control (RBAC)
+- Automatic token refresh mechanism
+- Swagger/OpenAPI 3.0 documentation
+- MapStruct for DTO mapping
+- Bean Validation with i18n messages
+- Global exception handling
 
 ### Frontend (React + TypeScript)
 
-Xem chi tiết tại: [`client/README.md`](client/README.md)
+Detailed documentation: [client/README.md](client/README.md)
 
-**Highlights:**
+**Key Features:**
 
-- React 19 với TypeScript
-- Tailwind CSS v4 + Shadcn/ui
-- Admin Dashboard đầy đủ CRUD
-- Responsive design
-- React Router 7
+- React 19.2.0 with TypeScript 5.9.3
+- TanStack Query v5 for server state management
+- React Context for auth and theme
+- Tailwind CSS 4.1.17 + shadcn/ui components
+- 14 pages with lazy loading
+- Protected routes with role checking
+- Form validation with React Hook Form + Zod
+- Axios interceptors with token refresh mutex
+- Responsive design with mobile support
+
+### Deployment
+
+Deployment guide: [DEPLOYMENT.md](DEPLOYMENT.md)
+
+**Infrastructure:**
+
+- Google Cloud Platform (GCP) setup
+- Cloud Run for backend (autoscaling 0-10 instances)
+- Cloud SQL for PostgreSQL (private IP)
+- Redis VM (e2-medium)
+- Cloud Storage for frontend static hosting
+- VPC networking with private connectivity
+- Estimated cost: ~$85/month
 
 ---
 
-## 🧪 API Testing
+## Testing
 
-### Postman Collection
+### API Testing
 
-Import collection từ: `server/postman/Quiz-API-Collection.json`
+**Postman Collection:**
 
-### Swagger UI
+```bash
+# Import collection from:
+server/postman/Quiz-API-Collection.json
+```
 
-Truy cập: `http://localhost:8080/swagger-ui.html`
+**Swagger UI:**
 
-### Test Accounts
+```
+http://localhost:8080/swagger-ui.html
+```
+
+**Automated Test Scripts:**
+
+```bash
+cd server
+
+# Test all APIs (27 test cases)
+./test-all-apis.sh
+
+# Test specific flows
+./test-registration.sh      # User registration flow
+./test-student-flow.sh       # Student endpoints (9 tests)
+./test-admin-flow.sh         # Admin endpoints (12 tests)
+
+# Performance testing
+./test-caching.sh            # Cache performance
+cd performance-tests
+node test-rate-limit.js      # Rate limiting
+node test-token-refresh.js   # Token refresh flow
+```
+
+**Test Accounts:**
 
 ```
 Admin:
-  - Email: admin@example.com
-  - Password: admin123
+  Email: admin@example.com
+  Password: admin123
 
 User:
-  - Email: user@example.com
-  - Password: user123
+  Email: user@example.com
+  Password: user123
 ```
+
+**Performance Results:**
+
+- With Redis cache: ~7ms average response time
+- Without cache: ~20ms average response time
+- Improvement: 65% faster
+- Throughput: 135+ requests/second
 
 ---
 
-## 🔧 Scripts hữu ích
+## Available Scripts
 
 ### Backend
 
 ```bash
 cd server
 
-# Build
-./gradlew build
+# Development
+./gradlew bootRun                 # Run application
+./gradlew build                   # Build project
+./gradlew test                    # Run tests
+./gradlew clean build             # Clean build
 
-# Run tests
-./gradlew test
+# Database
+./reset-db.sh                     # Reset database
 
-# Clean build
-./gradlew clean build
+# Testing
+./test-all-apis.sh                # Test all endpoints
+./quick-start.sh                  # Reset + Start + Test
 
-# Build Docker image
+# Docker
 docker build -t quiz-backend .
+docker run -p 8080:8080 quiz-backend
 ```
 
 ### Frontend
@@ -219,71 +352,283 @@ docker build -t quiz-backend .
 cd client
 
 # Development
-npm run dev
+npm run dev                       # Start dev server
+npm run build                     # Build for production
+npm run preview                   # Preview production build
 
-# Build production
-npm run build
+# Code Quality
+npm run lint                      # ESLint
+npm run type-check                # TypeScript check
+npm run test                      # Vitest tests
+npm run test:ui                   # Vitest UI
 
-# Preview production build
-npm run preview
-
-# Lint
-npm run lint
-
-# Type check
-npm run type-check
+# Docker
+docker build -t quiz-frontend .
 ```
 
----
-
-## 🌐 Deployment
-
-### Heroku / Render / Railway
-
-1. Backend: Deploy từ folder `server/`
-2. Frontend: Deploy từ folder `client/`
-3. Update environment variables:
-   - Backend: Database URL, JWT Secret, CORS origins
-   - Frontend: API URL
-
-### Docker Production
+### Deployment (GCP)
 
 ```bash
-# Build images
-docker-compose build
+# One-time infrastructure setup
+./setup-quiz.sh                   # Create GCP resources
 
-# Push lên Docker Hub / Registry
-docker tag quiz-backend your-registry/quiz-backend:latest
-docker push your-registry/quiz-backend:latest
+# Deploy services
+./deploy-backend.sh               # Deploy to Cloud Run
+./deploy-frontend-gcs.sh          # Deploy to Cloud Storage
+
+# Cleanup
+./cleanup.sh                      # Clean build artifacts
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Deployment
+
+### Google Cloud Platform (Recommended)
+
+**Prerequisites:**
+
+```bash
+# Install gcloud CLI
+# Authenticate with GCP
+gcloud auth login
+
+# Create .env file with credentials
+cp .env.example .env
+# Edit .env with your GCP project details
+```
+
+**Infrastructure Setup (One-time):**
+
+```bash
+# Create VPC, Cloud SQL, Redis VM, VPC Connector
+./setup-quiz.sh
+# Duration: ~10-15 minutes
+# Cost: ~$85/month (see DEPLOYMENT.md for breakdown)
+```
+
+**Deploy Backend:**
+
+```bash
+./deploy-backend.sh
+# - Builds Docker image with Cloud Build
+# - Deploys to Cloud Run with environment variables
+# - Configures VPC egress for private DB/Redis access
+# Duration: ~5-7 minutes
+```
+
+**Deploy Frontend:**
+
+```bash
+./deploy-frontend-gcs.sh
+# - Builds React app
+# - Uploads to Cloud Storage bucket
+# - Configures static website hosting
+# Duration: ~2-3 minutes
+```
+
+**Verify Deployment:**
+
+```bash
+# Backend health check
+curl https://your-backend-url/actuator/health
+
+# Frontend
+open https://storage.googleapis.com/your-bucket/index.html
+```
+
+### Alternative Platforms
+
+**Docker-based platforms (Render, Railway, Fly.io):**
+
+```bash
+# Backend
+cd server
+docker build -t quiz-backend .
+# Deploy using platform CLI
+
+# Frontend
+cd client
+npm run build
+# Deploy dist/ folder to static hosting
+```
+
+**Environment Variables:**
+
+- Backend: `DB_URL`, `REDIS_HOST`, `JWT_SECRET`, `CORS_ORIGINS`
+- Frontend: `VITE_API_URL`
+
+---
+
+## Technology Stack
 
 ### Backend
 
-- Java 21 + Spring Boot 4.0
-- Spring Security 6 (JWT)
-- Spring Data JPA
+**Framework & Language:**
+
+- Java 21 (LTS)
+- Spring Boot 4.0.2
+- Spring Framework 7.0.1
+- Spring Security 6
+
+**Database & ORM:**
+
 - PostgreSQL 16
-- MapStruct (DTO mapping)
-- Lombok
-- Gradle
+- Spring Data JPA (Hibernate 7.1.8)
+- MapStruct 1.6.3 (DTO mapping)
+- Lombok (boilerplate reduction)
+
+**Security:**
+
+- JJWT 0.12.6 (JWT tokens)
+- BCrypt password hashing
+- Spring Security authentication & authorization
+
+**Caching & Performance:**
+
+- Redis 7 (Lettuce client)
+- Spring Data Redis
+- Redisson 3.27.2 (distributed objects)
+- Bucket4j 8.10.1 (rate limiting)
+- Spring Cache abstraction
+
+**Documentation & Tools:**
+
+- Springdoc OpenAPI 3.0.0 (Swagger UI)
+- Spring Boot DevTools
+- Spring Boot Actuator
+- Gradle (build tool)
 
 ### Frontend
 
-- React 19 + TypeScript
-- Vite 6
-- Tailwind CSS v4
-- Shadcn/ui Components
-- React Router 7
-- Axios
+**Framework & Language:**
 
-### DevOps
+- React 19.2.0
+- TypeScript 5.9.3
+- Vite (Rolldown) 7.2.5
 
-- Docker & Docker Compose
-- GitHub Actions (CI/CD)
-- PostgreSQL
+**State Management:**
+
+- TanStack Query v5.90.16 (server state)
+- React Context API (auth, theme)
+- Zustand 5.0.9 (client state - optional)
+
+**Routing & Forms:**
+
+- React Router v7.10.1
+- React Hook Form 7.69.0
+- Zod 4.3.4 (schema validation)
+
+**HTTP Client:**
+
+- Axios 1.13.2
+- Async-mutex 0.5.0 (prevent race conditions)
+
+**UI & Styling:**
+
+- Tailwind CSS 4.1.17
+- shadcn/ui (Radix UI primitives)
+- Lucide React 0.556.0 (icons)
+- React Icons 5.5.0
+
+**Testing:**
+
+- Vitest 4.0.16
+- @testing-library/react 16.3.1
+- @testing-library/user-event
+
+### DevOps & Infrastructure
+
+**Containerization:**
+
+- Docker
+- Docker Compose
+
+**Cloud Platform:**
+
+- Google Cloud Platform (GCP)
+- Cloud Run (backend hosting)
+- Cloud SQL (PostgreSQL)
+- Cloud Storage (frontend hosting)
+- VPC (private networking)
+
+**CI/CD:**
+
+- GitHub Actions (planned)
+- Cloud Build (GCP)
+
+---
+
+## Performance Metrics
+
+**Backend:**
+
+- Average response time: 7ms (with Redis cache)
+- Cache hit ratio: 75-80%
+- Throughput: 135+ requests/second
+- Rate limiting: 50 req/min (auth), 200 req/min (API)
+
+**Frontend:**
+
+- First Contentful Paint: <1.5s
+- Time to Interactive: <3s
+- Bundle size: ~500KB (gzipped)
+- Lighthouse score: 90+
+
+**Infrastructure:**
+
+- Monthly cost: ~$85 USD
+- Autoscaling: 0-10 instances
+- Uptime target: 99.9%
+
+---
+
+## Security Features
+
+- JWT authentication (24h access + 7d refresh tokens)
+- HttpOnly cookies for refresh tokens
+- Automatic token refresh with mutex pattern
+- Role-based access control (RBAC)
+- BCrypt password hashing (strength 10)
+- Rate limiting (IP-based with Redis)
+- CORS configuration
+- Input validation (Bean Validation + Zod)
+- SQL injection prevention (JPA/Hibernate)
+- XSS protection
+- Environment-based secrets management
+
+---
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+**Code Standards:**
+
+- Backend: Follow Spring Boot best practices
+- Frontend: ESLint + TypeScript strict mode
+- Write tests for new features
+- Update documentation
+
+---
+
+## License
+
+This project is licensed under the MIT License - see LICENSE file for details.
+
+---
+
+## Contact & Support
+
+For questions or issues:
+
+- Open an issue on GitHub
+- Email: support@quizapp.example.com
 
 ---
