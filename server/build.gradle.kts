@@ -55,9 +55,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("io.lettuce:lettuce-core")
 
-	// Redisson + Bucket4j for distributed rate limiting (manual config without auto-configuration)
+	// Redisson + Bucket4j for distributed rate limiting
 	implementation("org.redisson:redisson:3.27.2")
-	implementation("org.redisson:redisson-spring-data-30:3.27.2") // Spring Data 3.0+ support
+	implementation("org.redisson:redisson-spring-data-30:3.27.2")
 	implementation("com.bucket4j:bucket4j-core:8.10.1")
 	implementation("com.bucket4j:bucket4j-redis:8.10.1")
 
