@@ -77,24 +77,6 @@ public class DataInitializer {
             userRole.setDescription("Standard user with basic access");
             roleRepository.save(userRole);
             log.info("Created role: ROLE_USER");
-            
-            Role moderatorRole = new Role();
-            moderatorRole.setName(RoleEnum.ROLE_MODERATOR);
-            moderatorRole.setDescription("Moderator for content management");
-            roleRepository.save(moderatorRole);
-            log.info("Created role: ROLE_MODERATOR");
-            
-            Role managerRole = new Role();
-            managerRole.setName(RoleEnum.ROLE_MANAGER);
-            managerRole.setDescription("Manager for system operations");
-            roleRepository.save(managerRole);
-            log.info("Created role: ROLE_MANAGER");
-            
-            Role editorRole = new Role();
-            editorRole.setName(RoleEnum.ROLE_EDITOR);
-            editorRole.setDescription("Editor for content editing");
-            roleRepository.save(editorRole);
-            log.info("Created role: ROLE_EDITOR");
         }
     }
 

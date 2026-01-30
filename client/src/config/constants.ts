@@ -116,12 +116,11 @@ export const APP_INFO = {
 } as const;
 
 export const CONTACT_INFO = {
-  EMAIL: "hello@dinoquiz.academy",
-  PHONE: "+84 912 345 678",
-  PHONE_DISPLAY: "+84 912 345 678",
-  ADDRESS: "456 Prehistoric Park, Jurassic District, Evolution City",
-  GOOGLE_MAPS_URL:
-    "https://maps.google.com/?q=456+Prehistoric+Park,+Jurassic+District",
+  EMAIL: "contact@example.com",
+  PHONE: "+84 123 456 789",
+  PHONE_DISPLAY: "+84 123 456 789",
+  ADDRESS: "Your Address Here",
+  GOOGLE_MAPS_URL: "https://maps.google.com/",
 } as const;
 
 export const NAV_LINKS = [

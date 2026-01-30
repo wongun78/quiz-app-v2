@@ -35,7 +35,7 @@ public record UserRequestDTO(
     String username,
     
     @Schema(description = "Strong password (min 8 chars, uppercase, lowercase, digit, special char)", 
-            example = "User@123", 
+            example = "********", 
             minLength = 8)
     @StrongPassword
     String password,

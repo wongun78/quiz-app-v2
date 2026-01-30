@@ -36,12 +36,12 @@ public record RegisterRequestDTO(
     String username,
     
     @Schema(description = "Strong password (min 8 chars, uppercase, lowercase, digit, special char)", 
-            example = "NewUser@123", 
+            example = "********", 
             minLength = 8)
     @StrongPassword
     String password,
     
-    @Schema(description = "Confirm password (must match password)", example = "NewUser@123")
+    @Schema(description = "Confirm password (must match password)", example = "********")
     @NotBlank(message = "{validation.confirmpassword.notblank}")
     String confirmPassword,
     
