@@ -15,7 +15,6 @@
 
 ## Live Demo (Production)
 
-👉 **Frontend:**  
 🔗 https://quiz-frontend-t2vgqgvuda-as.a.run.app/
 
 ---
