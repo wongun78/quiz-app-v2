@@ -1,5 +1,4 @@
 # GitHub Actions CI/CD Workflow
-# Workflow này sẽ build và test cả Frontend và Backend
 
 name: CI/CD Pipeline
 

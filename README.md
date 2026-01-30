@@ -437,14 +437,14 @@ cp .env.example .env
 
 ```bash
 # Backend health check
-curl https://quiz-backend-[PROJECT_NUMBER].us-central1.run.app/actuator/health
+curl https://quiz-backend-[PROJECT_NUMBER].asia-southeast1.run.app/actuator/health
 # Expected: {"status":"UP"}
 
 # Backend readiness
-curl https://quiz-backend-[PROJECT_NUMBER].us-central1.run.app/actuator/health/readiness
+curl https://quiz-backend-[PROJECT_NUMBER].asia-southeast1.run.app/actuator/health/readiness
 
 # Frontend
-open https://quiz-frontend-[PROJECT_NUMBER].us-central1.run.app
+open https://quiz-frontend-[PROJECT_NUMBER].asia-southeast1.run.app
 ```
 
 ### Alternative Platforms
@@ -600,7 +600,7 @@ Note: Sensitive secrets are stored in Google Cloud Secret Manager and mounted as
 - Backend autoscaling: 0-10 instances
 - Frontend autoscaling: 0-3 instances
 - Uptime target: 99.9%
-- Region: us-central1 (Iowa, USA)
+- Region: asia-southeast1 (Singapore) - Low latency for Vietnam
 
 ---
 
