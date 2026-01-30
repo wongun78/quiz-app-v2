@@ -1,8 +1,17 @@
 #!/bin/bash
 
+# Load environment variables from .env file
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+else
+    echo "Error: .env file not found!"
+    echo "Please copy .env.example to .env and fill in your configuration"
+    exit 1
+fi
+
 # Configuration
-PROJECT_ID="gen-lang-client-0115774747"
-REGION="us-central1"
+PROJECT_ID="${GCP_PROJECT_ID}"
+REGION="${GCP_REGION:-us-central1}"
 SERVICE_NAME="quiz-frontend"
 IMAGE_NAME="gcr.io/$PROJECT_ID/$SERVICE_NAME"
 
