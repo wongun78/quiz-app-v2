@@ -10,7 +10,7 @@ echo "Building Frontend Docker image..."
 cd client
 gcloud builds submit --tag $IMAGE_NAME .
 
-echo "🚀 Deploying to Cloud Run..."
+echo "Deploying to Cloud Run..."
 gcloud run deploy $SERVICE_NAME \
   --image $IMAGE_NAME \
   --region $REGION \

@@ -27,11 +27,11 @@ REDIS_PORT="${REDIS_PORT}"
 # CORS
 CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS}"
 
-echo "🔨 Building Docker image..."
+echo "Building Docker image..."
 cd server
 gcloud builds submit --tag $IMAGE_NAME .
 
-echo "🚀 Deploying to Cloud Run with Secret Manager..."
+echo "Deploying to Cloud Run with Secret Manager..."
 gcloud run deploy $SERVICE_NAME \
   --image $IMAGE_NAME \
   --region $REGION \
@@ -56,8 +56,8 @@ gcloud run deploy $SERVICE_NAME \
   --set-secrets "USER_PASSWORD=user-password:latest"
 
 echo ""
-echo "✅ Deployment complete!"
-echo "🔒 Secrets loaded from Secret Manager (not from .env)"
+echo "Deployment complete!"
+echo "Secrets loaded from Secret Manager (not from .env)"
 echo ""
 echo "Backend URL:"
 gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.url)'

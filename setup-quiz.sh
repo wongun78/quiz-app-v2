@@ -78,7 +78,7 @@ gcloud secrets add-iam-policy-binding user-password \
   --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor" --quiet
 
-echo "✅ Secrets created and IAM bindings configured"
+echo "Secrets created and IAM bindings configured"
 
 echo "--- Creating VPC Network ---"
 gcloud compute networks create $VPC_NAME \
@@ -151,8 +151,8 @@ echo "DB_PRIVATE_IP=$DB_PRIVATE_IP" >> .env
 echo "REDIS_HOST=$REDIS_HOST" >> .env
 echo "REDIS_PORT=6379" >> .env
 
-echo "✅ Cloud SQL Private IP: $DB_PRIVATE_IP"
-echo "✅ Redis Memorystore IP: $REDIS_HOST"
-echo "✅ Đã tự động cập nhật vào file .env"
+echo "Cloud SQL Private IP: $DB_PRIVATE_IP"
+echo "Redis Memorystore IP: $REDIS_HOST"
+echo "Đã tự động cập nhật vào file .env"
 echo ""
 echo "HOÀN TẤT! HỆ THỐNG ĐÃ SẴN SÀNG."

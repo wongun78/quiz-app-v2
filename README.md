@@ -38,7 +38,8 @@
 - Monorepo structure with Docker support
 - RESTful API with 32 endpoints
 - Responsive UI built with Tailwind CSS 4 and shadcn/ui
-- Production deployment on Google Cloud Platform (Cloud Run, Cloud SQL, Redis VM)
+- Production deployment on Google Cloud Platform (Cloud Run, Cloud SQL, Redis Memorystore)
+- Secrets management with Google Cloud Secret Manager
 - CI/CD ready with comprehensive testing scripts
 
 ## Project Structure
@@ -73,11 +74,9 @@ quiz-app-v2/
 │   └── README.md
 │
 ├── docker-compose.yml             # Local development (Postgres + Redis + Backend)
-├── setup-quiz.sh                  # GCP infrastructure setup
+├── setup-quiz.sh                  # GCP infrastructure setup with Secret Manager
 ├── deploy-backend.sh              # Deploy backend to Cloud Run
-├── deploy-frontend-gcs.sh         # Deploy frontend to Cloud Storage
-├── DEPLOYMENT.md                  # Deployment guide
-├── PROJECT-ANALYSIS.md            # Comprehensive project analysis
+├── deploy-frontend.sh             # Deploy frontend to Cloud Run
 ├── .env.example                   # Environment variables template
 └── README.md                      # This file
 ```
@@ -254,12 +253,12 @@ Deployment guide: [DEPLOYMENT.md](DEPLOYMENT.md)
 **Infrastructure:**
 
 - Google Cloud Platform (GCP) setup
-- Cloud Run for backend (autoscaling 0-10 instances)
-- Cloud SQL for PostgreSQL (private IP)
-- Redis VM (e2-medium)
-- Cloud Storage for frontend static hosting
-- VPC networking with private connectivity
-- Estimated cost: ~$85/month
+- Cloud Run for frontend and backend (autoscaling 0-10 instances)
+- Cloud SQL for PostgreSQL (db-f1-micro, private IP)
+- Redis Memorystore (1GB BASIC tier, managed service)
+- VPC networking with private connectivity (VPC Connector)
+- Secret Manager for secure credential storage
+- Estimated cost: ~$58/month (51% reduction from initial setup)
 
 ---
 
@@ -370,11 +369,11 @@ docker build -t quiz-frontend .
 
 ```bash
 # One-time infrastructure setup
-./setup-quiz.sh                   # Create GCP resources
+./setup-quiz.sh                   # Create GCP resources + Secret Manager
 
 # Deploy services
-./deploy-backend.sh               # Deploy to Cloud Run
-./deploy-frontend-gcs.sh          # Deploy to Cloud Storage
+./deploy-backend.sh               # Deploy backend to Cloud Run
+./deploy-frontend.sh              # Deploy frontend to Cloud Run
 
 # Cleanup
 ./cleanup.sh                      # Clean build artifacts
@@ -401,10 +400,14 @@ cp .env.example .env
 **Infrastructure Setup (One-time):**
 
 ```bash
-# Create VPC, Cloud SQL, Redis VM, VPC Connector
+# Create VPC, Cloud SQL, Redis Memorystore, VPC Connector, Secret Manager
 ./setup-quiz.sh
 # Duration: ~10-15 minutes
-# Cost: ~$85/month (see DEPLOYMENT.md for breakdown)
+# Cost: ~$58/month
+#   - Cloud SQL (db-f1-micro): $15/month
+#   - Redis Memorystore (1GB): $25/month
+#   - VPC Connector: $9/month
+#   - Cloud Run: $9/month
 ```
 
 **Deploy Backend:**
@@ -412,29 +415,36 @@ cp .env.example .env
 ```bash
 ./deploy-backend.sh
 # - Builds Docker image with Cloud Build
-# - Deploys to Cloud Run with environment variables
-# - Configures VPC egress for private DB/Redis access
+# - Deploys to Cloud Run with Secret Manager integration
+# - Mounts secrets (DB_PASSWORD, JWT_SECRET, etc.) from Secret Manager
+# - Configures VPC egress (private-ranges-only) for DB/Redis access
+# - Memory: 1Gi, CPU: 1, Autoscaling: 0-10 instances
 # Duration: ~5-7 minutes
 ```
 
 **Deploy Frontend:**
 
 ```bash
-./deploy-frontend-gcs.sh
-# - Builds React app
-# - Uploads to Cloud Storage bucket
-# - Configures static website hosting
-# Duration: ~2-3 minutes
+./deploy-frontend.sh
+# - Builds Docker image with multi-stage build (Node.js + Nginx)
+# - Deploys to Cloud Run
+# - Serves static assets via Nginx with SPA routing support
+# - Memory: 512Mi, CPU: 1, Autoscaling: 0-3 instances
+# Duration: ~3-5 minutes
 ```
 
 **Verify Deployment:**
 
 ```bash
 # Backend health check
-curl https://your-backend-url/actuator/health
+curl https://quiz-backend-[PROJECT_NUMBER].us-central1.run.app/actuator/health
+# Expected: {"status":"UP"}
+
+# Backend readiness
+curl https://quiz-backend-[PROJECT_NUMBER].us-central1.run.app/actuator/health/readiness
 
 # Frontend
-open https://storage.googleapis.com/your-bucket/index.html
+open https://quiz-frontend-[PROJECT_NUMBER].us-central1.run.app
 ```
 
 ### Alternative Platforms
@@ -455,8 +465,11 @@ npm run build
 
 **Environment Variables:**
 
-- Backend: `DB_URL`, `REDIS_HOST`, `JWT_SECRET`, `CORS_ORIGINS`
-- Frontend: `VITE_API_URL`
+- Backend (from Secret Manager): `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_PASSWORD`, `USER_PASSWORD`
+- Backend (from .env): `DB_URL`, `DB_USERNAME`, `REDIS_HOST`, `REDIS_PORT`, `CORS_ALLOWED_ORIGINS`
+- Frontend (build-time): `VITE_API_BASE_URL`
+
+Note: Sensitive secrets are stored in Google Cloud Secret Manager and mounted as environment variables at runtime.
 
 ---
 
@@ -486,8 +499,8 @@ npm run build
 
 **Caching & Performance:**
 
-- Redis 7 (Lettuce client)
-- Spring Data Redis
+- Google Cloud Memorystore for Redis (1GB BASIC tier)
+- Spring Data Redis (Lettuce client)
 - Redisson 3.27.2 (distributed objects)
 - Bucket4j 8.10.1 (rate limiting)
 - Spring Cache abstraction
@@ -547,10 +560,12 @@ npm run build
 **Cloud Platform:**
 
 - Google Cloud Platform (GCP)
-- Cloud Run (backend hosting)
-- Cloud SQL (PostgreSQL)
-- Cloud Storage (frontend hosting)
-- VPC (private networking)
+- Cloud Run (frontend and backend hosting)
+- Cloud SQL (PostgreSQL with private IP)
+- Memorystore for Redis (managed service)
+- Secret Manager (credentials storage)
+- VPC with dedicated subnets (private networking)
+- VPC Connector (Cloud Run to VPC integration)
 
 **CI/CD:**
 
@@ -577,9 +592,15 @@ npm run build
 
 **Infrastructure:**
 
-- Monthly cost: ~$85 USD
-- Autoscaling: 0-10 instances
+- Monthly cost: ~$58 USD (51% optimized)
+  - Cloud SQL (db-f1-micro): $15
+  - Redis Memorystore (1GB): $25
+  - VPC Connector: $9
+  - Cloud Run (frontend + backend): $9
+- Backend autoscaling: 0-10 instances
+- Frontend autoscaling: 0-3 instances
 - Uptime target: 99.9%
+- Region: us-central1 (Iowa, USA)
 
 ---
 
@@ -591,11 +612,17 @@ npm run build
 - Role-based access control (RBAC)
 - BCrypt password hashing (strength 10)
 - Rate limiting (IP-based with Redis)
+- Google Cloud Secret Manager for credential storage
+  - Auto-generated JWT secrets (512-bit)
+  - Auto-generated admin/user passwords (192-bit)
+  - Encrypted at rest with automatic rotation support
+  - IAM-based access control
 - CORS configuration
 - Input validation (Bean Validation + Zod)
 - SQL injection prevention (JPA/Hibernate)
 - XSS protection
-- Environment-based secrets management
+- VPC private networking (no public database access)
+- No hardcoded secrets in codebase
 
 ---
 
