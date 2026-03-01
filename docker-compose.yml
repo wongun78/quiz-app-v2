@@ -64,6 +64,8 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:80}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      USER_PASSWORD: ${USER_PASSWORD}
     networks:
       - quiz-network
     healthcheck:

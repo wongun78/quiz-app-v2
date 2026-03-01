@@ -1,33 +1,137 @@
-name: Deploy Backend to Cloud Run
+# =============================================================================
+# backend.yml — CI/CD cho Spring Boot backend
+#
+# Trigger: push lên main khi có thay đổi trong server/ hoặc file này
+#
+# Luồng:
+#   1. [test]              → chạy Gradle tests với Postgres + Redis thật
+#   2. [build-and-deploy]  → build Docker image (linux/amd64), push Artifact
+#                            Registry, deploy Cloud Run
+#
+# Auth: Workload Identity Federation (không cần service account key!)
+# =============================================================================
+name: Deploy Backend
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
     paths:
       - "server/**"
       - ".github/workflows/backend.yml"
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "server/**"
+  workflow_dispatch: # Cho phép trigger thủ công từ GitHub UI
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: asia-southeast1
   SERVICE_NAME: quiz-backend
-  IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/quiz-backend
+  # Artifact Registry (dùng AR thay GCR): format = REGION-docker.pkg.dev/PROJECT/REPO/IMAGE
+  IMAGE: asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/quiz-repo/backend
 
+# =============================================================================
+# JOB 1: Chạy tests
+# =============================================================================
 jobs:
-  deploy:
-    name: Build and Deploy Backend
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      id-token: write
+    # Service containers: chạy Postgres + Redis như Docker containers
+    # GitHub Actions tự start/stop chúng, accessible qua localhost
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: quiz_db_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: ./server
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          # Cache Gradle dependencies → tiết kiệm ~1-2 phút mỗi lần chạy
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
+        env:
+          # Override application.properties với test values
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/quiz_db_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: ""
+          REDIS_DATABASE: 0
+          JWT_SECRET: test-jwt-secret-for-ci-at-least-32-chars-long
+          ADMIN_PASSWORD: Admin@Test2026
+          USER_PASSWORD: User@Test2026
+          DATA_INIT_ENABLED: "false" # Không seed data trong test
+
+      - name: Upload test reports
+        # Luôn upload dù test fail → dễ debug
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: server/build/reports/tests/test/
+          retention-days: 7
+
+  # =============================================================================
+  # JOB 2: Build Docker image và Deploy lên Cloud Run
+  # =============================================================================
+  build-and-deploy:
+    name: Build & Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    # Chỉ deploy khi push lên main (không deploy khi chỉ là PR)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: test # Phải pass test trước mới deploy
+
+    # QUAN TRỌNG: cần id-token permission để WIF hoạt động
+    permissions:
+      contents: read
+      id-token: write # Cho phép tạo OIDC token để xác thực với GCP
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Xác thực với GCP qua Workload Identity Federation
+      # → Không cần JSON key, không cần lưu secret nhạy cảm
+      - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
@@ -36,46 +140,91 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure Docker for GCR
-        run: gcloud auth configure-docker
+      # Cấu hình Docker để push lên Artifact Registry
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
 
-      - name: Build Docker image
-        run: |
-          cd server
-          docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} \
-                       -t ${{ env.IMAGE_NAME }}:latest .
+      # Set up QEMU để build cross-platform (arm64 → amd64)
+      # Cần thiết vì Cloud Run chạy linux/amd64
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Push Docker image to GCR
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          # linux/amd64: bắt buộc cho Cloud Run (x86-64)
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          # Cache layers từ Artifact Registry → build nhanh hơn lần sau
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
+
+      # Lấy các giá trị runtime từ GCP (không hardcode trong workflow)
+      - name: Get infrastructure values
+        id: infra
         run: |
-          docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker push ${{ env.IMAGE_NAME }}:latest
+          DB_IP=$(gcloud sql instances describe quiz-db \
+            --format='value(ipAddresses[0].ipAddress)')
+          REDIS_HOST=$(gcloud redis instances describe quiz-redis \
+            --region=${{ env.REGION }} \
+            --format='value(host)')
+          echo "db_ip=$DB_IP" >> $GITHUB_OUTPUT
+          echo "redis_host=$REDIS_HOST" >> $GITHUB_OUTPUT
+          echo "DB IP: $DB_IP, Redis: $REDIS_HOST"
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
-            --region ${{ env.REGION }} \
-            --platform managed \
-            --allow-unauthenticated \
-            --vpc-connector quiz-connector \
-            --vpc-egress all-traffic \
-            --memory 2Gi \
-            --cpu 2 \
-            --min-instances 1 \
-            --max-instances 10 \
-            --set-env-vars "DB_URL=jdbc:postgresql://${{ secrets.DB_PRIVATE_IP }}:5432/${{ secrets.DB_NAME }},DB_USERNAME=${{ secrets.DB_USER }},REDIS_HOST=${{ secrets.REDIS_HOST }},REDIS_PORT=6379,SPRING_PROFILES_ACTIVE=prod,DATA_INIT_ENABLED=true,CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}" \
-            --set-secrets "DB_PASSWORD=db-password:latest,JWT_SECRET=jwt-secret:latest,ADMIN_PASSWORD=admin-password:latest,USER_PASSWORD=user-password:latest"
+          CONNECTOR="projects/${{ env.PROJECT_ID }}/locations/${{ env.REGION }}/connectors/quiz-connector"
+          SA="${{ secrets.WIF_SERVICE_ACCOUNT }}"
 
-      - name: Get Service URL
-        id: get-url
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image="${{ env.IMAGE }}:${{ github.sha }}" \
+            --region="${{ env.REGION }}" \
+            --service-account="$SA" \
+            --vpc-connector="$CONNECTOR" \
+            --vpc-egress=private-ranges-only \
+            --set-env-vars="SPRING_DATASOURCE_URL=jdbc:postgresql://${{ steps.infra.outputs.db_ip }}:5432/quiz_db" \
+            --set-env-vars="SPRING_DATASOURCE_USERNAME=postgres" \
+            --set-env-vars="REDIS_HOST=${{ steps.infra.outputs.redis_host }}" \
+            --set-env-vars="REDIS_PORT=6379" \
+            --set-env-vars="REDIS_PASSWORD=" \
+            --set-env-vars="REDIS_DATABASE=0" \
+            --set-env-vars="SPRING_JPA_HIBERNATE_DDL_AUTO=update" \
+            --set-env-vars="DATA_INIT_ENABLED=true" \
+            --set-secrets="SPRING_DATASOURCE_PASSWORD=db-password:latest" \
+            --set-secrets="JWT_SECRET=jwt-secret:latest" \
+            --set-secrets="ADMIN_PASSWORD=admin-password:latest" \
+            --set-secrets="USER_PASSWORD=user-password:latest" \
+            --memory=1Gi \
+            --cpu=1 \
+            --cpu-boost \
+            --min-instances=0 \
+            --max-instances=3 \
+            --port=8080 \
+            --timeout=300 \
+            --allow-unauthenticated
+
+      - name: Get service URL and update CORS placeholder
+        id: service-url
         run: |
           URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
+            --region="${{ env.REGION }}" \
             --format='value(status.url)')
           echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "✓ Backend deployed: $URL"
 
-      - name: Show deployment result
+      - name: Summary
         run: |
-          echo "Backend deployed successfully"
-          echo "URL: ${{ steps.get-url.outputs.url }}"
-          echo "Image: ${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "## Backend Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | ${{ env.SERVICE_NAME }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | ${{ steps.service-url.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY

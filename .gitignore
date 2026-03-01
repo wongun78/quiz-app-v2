@@ -141,3 +141,19 @@ coverage/
 # Logs
 logs/
 *.log
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform variable files with real secrets (keep .example committed)
+terraform/terraform.tfvars
+terraform/environments/**/*.tfvars.local

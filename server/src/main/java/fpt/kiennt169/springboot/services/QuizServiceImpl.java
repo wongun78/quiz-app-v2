@@ -26,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class QuizServiceImpl implements QuizService {
-    
+
     private final QuizRepository quizRepository;
     private final QuestionRepository questionRepository;
     private final QuizMapper quizMapper;
@@ -34,11 +34,11 @@ public class QuizServiceImpl implements QuizService {
     @Override
     public QuizResponseDTO create(QuizRequestDTO requestDTO) {
         Quiz quiz = quizMapper.toEntity(requestDTO);
-        
+
         if (quiz.getActive() == null) {
             quiz.setActive(false);
         }
-        
+
         Quiz savedQuiz = quizRepository.save(quiz);
         return quizMapper.toResponseDTO(savedQuiz);
     }
@@ -50,16 +50,16 @@ public class QuizServiceImpl implements QuizService {
         Page<QuizResponseDTO> responsePage = quizPage.map(quizMapper::toResponseDTO);
         return PageResponseDTO.from(responsePage);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public PageResponseDTO<QuizResponseDTO> searchWithPaging(String title, Boolean active, Pageable pageable) {
         Specification<Quiz> spec = Specification
                 .where(QuizSpecification.hasTitle(title))
                 .and(QuizSpecification.isActive(active));
-        
+
         Page<Quiz> quizPage = quizRepository.findAll(spec, pageable);
-        
+
         Page<QuizResponseDTO> responsePage = quizPage.map(quizMapper::toResponseDTO);
         return PageResponseDTO.from(responsePage);
     }
@@ -84,24 +84,24 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "quizzes", key = "'basic::' + #id"),
-        @CacheEvict(value = "quizzes", key = "'details::' + #id"),
-        @CacheEvict(value = "quizzes", key = "'exam::' + #id")
+            @CacheEvict(value = "quizzes", key = "'basic::' + #id"),
+            @CacheEvict(value = "quizzes", key = "'details::' + #id"),
+            @CacheEvict(value = "quizzes", key = "'exam::' + #id")
     })
     public QuizResponseDTO update(UUID id, QuizRequestDTO requestDTO) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
-        
+
         quizMapper.updateEntityFromDTO(requestDTO, quiz);
-        
+
         Quiz updatedQuiz = quizRepository.save(quiz);
         return quizMapper.toResponseDTO(updatedQuiz);
     }
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "quizzes", key = "'details::' + #id"),
-        @CacheEvict(value = "quizzes", key = "'exam::' + #id")
+            @CacheEvict(value = "quizzes", key = "'details::' + #id"),
+            @CacheEvict(value = "quizzes", key = "'exam::' + #id")
     })
     public void delete(UUID id) {
         if (!quizRepository.existsById(id)) {
@@ -112,47 +112,47 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "quizzes", key = "'details::' + #quizId"),
-        @CacheEvict(value = "quizzes", key = "'exam::' + #quizId"),
-        @CacheEvict(value = "questions", key = "'quiz::' + #quizId")
+            @CacheEvict(value = "quizzes", key = "'details::' + #quizId"),
+            @CacheEvict(value = "quizzes", key = "'exam::' + #quizId"),
+            @CacheEvict(value = "questions", key = "'quiz::' + #quizId")
     })
     public QuizDetailResponseDTO addQuestions(UUID quizId, java.util.List<UUID> questionIds) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
-        
+
         for (UUID questionId : questionIds) {
             Question question = questionRepository.findById(questionId)
                     .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
             addQuestionIfNotExists(quiz, question);
         }
-        
+
         return getQuizWithDetails(quizId);
     }
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "quizzes", key = "'details::' + #quizId"),
-        @CacheEvict(value = "quizzes", key = "'exam::' + #quizId"),
-        @CacheEvict(value = "questions", key = "'quiz::' + #quizId")
+            @CacheEvict(value = "quizzes", key = "'details::' + #quizId"),
+            @CacheEvict(value = "quizzes", key = "'exam::' + #quizId"),
+            @CacheEvict(value = "questions", key = "'quiz::' + #quizId")
     })
     public void removeQuestion(UUID quizId, UUID questionId) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));
-        
+
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
-        
+
         quiz.getQuestions().remove(question);
         quizRepository.save(quiz);
     }
-    
+
     private void addQuestionIfNotExists(Quiz quiz, Question question) {
         if (!quiz.getQuestions().contains(question)) {
             quiz.getQuestions().add(question);
             quizRepository.save(quiz);
         }
     }
-    
+
     private QuizDetailResponseDTO getQuizWithDetails(UUID quizId) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", quizId));

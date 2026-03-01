@@ -2,6 +2,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "fpt.kiennt169.springboot.Main",
+      "projectName": "server"
+    },
+    {
+      "type": "java",
       "name": "Spring Boot-Application<server>",
       "request": "launch",
       "cwd": "${workspaceFolder}",
