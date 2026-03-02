@@ -132,8 +132,10 @@ jobs:
           TF_VAR_admin_password: ${{ secrets.TF_VAR_ADMIN_PASSWORD }}
           TF_VAR_user_password: ${{ secrets.TF_VAR_USER_PASSWORD }}
         # Không dùng continue-on-error: nếu plan fail → job fail → apply KHÔNG chạy
-        # (khi job có needs + custom if:, GitHub bỏ implicit success check)
+        # pipefail: bắt buộc để pipe không nuốt exit code của terraform
+        #   (không có pipefail: `terraform plan | tee` → exit code của tee = 0 dù terraform fail)
         run: |
+          set -o pipefail
           terraform plan \
             -var-file="environments/dev/terraform.tfvars" \
             -out=tfplan \
