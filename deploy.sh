@@ -44,7 +44,6 @@ ENV_FILE="${SCRIPT_DIR}/.env"
 if [[ -f "$ENV_FILE" ]]; then
   # shellcheck disable=SC1091
   source "$ENV_FILE"
-  echo "✓ Đã load credentials từ .env"
 else
   echo ""
   echo "ERROR: File .env không tồn tại!"
@@ -105,12 +104,7 @@ cmd_setup() {
     servicenetworking.googleapis.com \
     cloudresourcemanager.googleapis.com
 
-  success "Tất cả APIs đã được enable"
-
-  info "Kiểm tra:"
-  gcloud services list --enabled \
-    --filter="name:(run OR sqladmin OR redis OR artifactregistry OR vpcaccess OR secretmanager)" \
-    --format="table(name)"
+  success "APIs enabled"
 }
 
 # =============================================================================
@@ -128,14 +122,8 @@ cmd_registry() {
     --description="Quiz App Docker images" \
     || warn "Repository đã tồn tại, bỏ qua"
 
-  success "Artifact Registry: ${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}"
-
-  info "Cấu hình Docker authentication với GCP"
-  # Lệnh này thêm credential helper vào ~/.docker/config.json
-  # Sau đó docker push/pull tới GCP sẽ tự dùng gcloud credentials
   gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
-
-  success "Docker đã được cấu hình để push lên ${REGION}-docker.pkg.dev"
+  success "Artifact Registry: ${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}"
 }
 
 # =============================================================================
@@ -236,7 +224,6 @@ cmd_database() {
   DB_IP=$(gcloud sql instances describe "$SQL_INSTANCE" \
     --format='value(ipAddresses[0].ipAddress)')
   success "Cloud SQL private IP: $DB_IP"
-  echo "  → Lưu lại IP này: $DB_IP"
 }
 
 # =============================================================================
@@ -259,7 +246,6 @@ cmd_redis() {
     --region="$REGION" \
     --format='value(host)')
   success "Redis host: $REDIS_HOST"
-  echo "  → Lưu lại host này: $REDIS_HOST"
 }
 
 # =============================================================================
@@ -312,9 +298,6 @@ cmd_secrets() {
 # STEP: build — Bước 7: Build & Push Docker images
 # =============================================================================
 cmd_build() {
-  # Lấy IP để nhúng vào CORS (build-time không cần, runtime cần)
-  DB_IP=$(gcloud sql instances describe "$SQL_INSTANCE" \
-    --format='value(ipAddresses[0].ipAddress)' 2>/dev/null || echo "PENDING")
 
   info "Bước 7a: Build & Push Backend image"
   # Backend image: Spring Boot — không cần build arg, mọi config qua env vars lúc run
@@ -403,9 +386,6 @@ cmd_deploy() {
   docker push "$FRONTEND_IMAGE"
 
   info "Bước 8c: Deploy Frontend lên Cloud Run"
-  # Update CORS trên backend để allow frontend domain
-  FRONTEND_URL_PLACEHOLDER="pending"
-
   gcloud run deploy "$FRONTEND_SERVICE" \
     --image="$FRONTEND_IMAGE" \
     --region="$REGION" \
@@ -431,14 +411,9 @@ cmd_deploy() {
     --update-env-vars="CORS_ALLOWED_ORIGINS=${FRONTEND_URL}"
 
   echo ""
-  echo "============================================"
-  echo "  DEPLOYMENT COMPLETE"
-  echo "============================================"
-  echo "  Frontend : $FRONTEND_URL"
-  echo "  Backend  : $BACKEND_URL"
-  echo "  API Docs : ${BACKEND_URL}/swagger-ui/index.html"
-  echo "  Health   : ${BACKEND_URL}/actuator/health"
-  echo "============================================"
+  echo "Frontend : $FRONTEND_URL"
+  echo "Backend  : $BACKEND_URL"
+  echo "Swagger  : ${BACKEND_URL}/swagger-ui/index.html"
 }
 
 # =============================================================================

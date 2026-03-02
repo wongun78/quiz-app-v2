@@ -23,17 +23,12 @@ info()    { echo -e "${CYAN}▶ $1${NC}"; }
 success() { echo -e "${GREEN}✓ $1${NC}"; }
 warn()    { echo -e "${YELLOW}⚠ $1${NC}"; }
 
-echo ""
-echo "============================================"
-echo "  Phase 4: Terraform Setup"
-echo "  Project: $PROJECT_ID"
-echo "============================================"
-echo ""
+echo "Terraform setup: $PROJECT_ID"
 
 # =============================================================================
 # Bước 1: Tạo GCS bucket cho Terraform state
 # =============================================================================
-info "Bước 1: Tạo GCS state bucket"
+info "GCS state bucket"
 
 # Tại sao cần bucket riêng?
 # → Terraform state là "database" lưu trạng thái hiện tại của infra
@@ -56,7 +51,7 @@ success "Versioning enabled trên gs://${STATE_BUCKET}"
 # =============================================================================
 # Bước 2: Cấp quyền cho SA quiz-run-sa quản lý state
 # =============================================================================
-info "Bước 2: Cấp quyền cho SA đọc/ghi state bucket"
+info "SA → state bucket IAM"
 
 # Terraform cần đọc và ghi state file trong bucket
 gcloud storage buckets add-iam-policy-binding "gs://${STATE_BUCKET}" \
@@ -68,7 +63,7 @@ success "SA có thể read/write state bucket"
 # =============================================================================
 # Bước 3: Cấp quyền cho SA để Terraform quản lý GCP resources
 # =============================================================================
-info "Bước 3: Cấp thêm roles cho Terraform SA"
+info "IAM roles cho Terraform SA"
 
 # Terraform cần tạo/xóa/update GCP resources → cần quyền rộng hơn CI/CD
 # Lưu ý: trong production nên tạo terraform-sa riêng biệt với quiz-run-sa
@@ -95,34 +90,15 @@ for ROLE in "${TERRAFORM_ROLES[@]}"; do
     --member="serviceAccount:${SA_EMAIL}" \
     --role="$ROLE" \
     --condition=None \
-    --quiet 2>/dev/null | grep -E "role:|etag" || true
-  success "Đã cấp: $ROLE"
+    --quiet 2>/dev/null || true
+  success "$ROLE"
 done
 
 # =============================================================================
 # DONE
 # =============================================================================
 echo ""
-echo "============================================"
-echo "  DONE! Tiếp theo:"
-echo ""
-echo "  1. Copy và điền terraform.tfvars:"
-echo "     cd terraform/"
-echo "     cp terraform.tfvars.example terraform.tfvars"
-echo "     # Điền passwords thật vào terraform.tfvars"
-echo ""
-echo "  2. Khởi tạo Terraform (kết nối GCS backend):"
-echo "     terraform init"
-echo ""
-echo "  3. Import resources đã tồn tại:"
-echo "     chmod +x import.sh && ./import.sh"
-echo ""
-echo "  4. Xem sẽ thay đổi gì:"
-echo "     terraform plan -var-file=environments/dev/terraform.tfvars"
-echo ""
-echo "  5. GitHub Secrets cần thêm:"
-echo "     TF_VAR_DB_PASSWORD    = (db password)"
-echo "     TF_VAR_JWT_SECRET     = (jwt secret)"
-echo "     TF_VAR_ADMIN_PASSWORD = (admin password)"
-echo "     TF_VAR_USER_PASSWORD  = (user password)"
-echo "============================================"
+echo "DONE. Tiếp theo:"
+echo "  cd terraform/ && terraform init"
+echo "  ./import.sh                                   # import existing resources"
+echo "  terraform plan -var-file=environments/dev/terraform.tfvars"

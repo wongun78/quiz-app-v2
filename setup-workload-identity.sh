@@ -24,10 +24,8 @@ set -euo pipefail
 # =============================================================================
 PROJECT_ID="kien-terraform-playground"
 PROJECT_NUMBER="7102516370"
-REPO="wongun78/quiz-app-v2"    # GitHub repo: owner/repo-name
-REGION="asia-southeast1"
+REPO="wongun78/quiz-app-v2"
 
-# Tên resources WIF
 POOL_NAME="github-pool"
 PROVIDER_NAME="github-provider"
 SA_NAME="quiz-run-sa"
@@ -41,20 +39,14 @@ info()    { echo -e "${CYAN}▶ $1${NC}"; }
 success() { echo -e "${GREEN}✓ $1${NC}"; }
 warn()    { echo -e "${YELLOW}⚠ $1${NC}"; }
 
-echo ""
-echo "============================================"
-echo "  Phase 3: Workload Identity Federation"
-echo "  Project: $PROJECT_ID"
-echo "  GitHub Repo: $REPO"
-echo "============================================"
-echo ""
+echo "WIF setup: $PROJECT_ID | $REPO"
 
 # =============================================================================
 # Bước 1: Tạo Workload Identity Pool
 # =============================================================================
 # Pool = "vùng tin cậy" chứa các Identity Providers bên ngoài GCP
 # Mỗi project nên có 1 pool cho CI/CD
-info "Bước 1: Tạo Workload Identity Pool"
+info "Workload Identity Pool"
 if gcloud iam workload-identity-pools describe "$POOL_NAME" \
     --location="global" \
     --project="$PROJECT_ID" &>/dev/null; then
@@ -80,7 +72,7 @@ fi
 #   - attribute.repository ← repository (tên repo để restrict access)
 # --attribute-condition: CHỈ cho phép token từ repo cụ thể này
 #   Không có dòng này → bất kỳ GitHub repo nào cũng có thể impersonate SA!
-info "Bước 2: Tạo OIDC Provider"
+info "OIDC Provider"
 if gcloud iam workload-identity-pools providers describe "$PROVIDER_NAME" \
     --location="global" \
     --workload-identity-pool="$POOL_NAME" \
@@ -104,14 +96,14 @@ fi
 # Binding này nói: "workflow từ repo $REPO được phép impersonate SA này"
 # principalSet://: dùng vì có nhiều workflow trong 1 repo
 # Nếu dùng principal:// → chỉ 1 workflow cụ thể
-info "Bước 3: Bind Service Account với Workload Identity"
+info "SA ← WIF binding"
 WIF_MEMBER="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL_NAME}/attribute.repository/${REPO}"
 
 gcloud iam service-accounts add-iam-policy-binding "$SA_EMAIL" \
   --project="$PROJECT_ID" \
   --role="roles/iam.workloadIdentityUser" \
   --member="$WIF_MEMBER"
-success "IAM binding done: $SA_EMAIL ← $WIF_MEMBER"
+success "$SA_EMAIL ← $WIF_MEMBER"
 
 # =============================================================================
 # Bước 4: Đảm bảo SA có đủ roles cho CI/CD
@@ -122,34 +114,21 @@ success "IAM binding done: $SA_EMAIL ← $WIF_MEMBER"
 #   - run.developer: deploy Cloud Run services
 #   - iam.serviceAccountUser: deploy-as SA (Cloud Run cần permission này)
 #   - redis.viewer: đọc Redis instance info (lấy host IP trong CI/CD)
-info "Bước 4: Cấp thêm roles cho SA (CI/CD needs)"
+info "IAM roles cho SA"
 for ROLE in "roles/artifactregistry.writer" "roles/run.developer" "roles/iam.serviceAccountUser" "roles/redis.viewer"; do
   gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:${SA_EMAIL}" \
     --role="$ROLE" \
     --condition=None \
-    --quiet 2>/dev/null | grep -E "role:|serviceAccount" || true
-  success "Đã cấp: $ROLE → $SA_EMAIL"
+    --quiet 2>/dev/null || true
+  success "$ROLE"
 done
 
-# =============================================================================
-# Bước 5: In ra thông tin cần add vào GitHub Secrets
-# =============================================================================
+# Bước 5: GitHub Secrets cần add
 WIF_PROVIDER_FULL="projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL_NAME}/providers/${PROVIDER_NAME}"
 
 echo ""
-echo "============================================"
-echo "  DONE! Add các secrets sau vào GitHub:"
-echo "  Repo → Settings → Secrets → Actions"
-echo "============================================"
-echo ""
-echo "  Secret Name              | Value"
-echo "  -------------------------|-------------------------------------------"
-echo "  GCP_PROJECT_ID           | ${PROJECT_ID}"
-echo "  WIF_PROVIDER             | ${WIF_PROVIDER_FULL}"
-echo "  WIF_SERVICE_ACCOUNT      | ${SA_EMAIL}"
-echo ""
-echo "  ⚠ CHỈ 3 secrets này — không cần key JSON, không cần password!"
-echo ""
-echo "  Sau khi add secrets, push code lên GitHub để trigger CI/CD."
-echo ""
+echo "GitHub Secrets (Settings → Secrets → Actions):"
+echo "  GCP_PROJECT_ID      = ${PROJECT_ID}"
+echo "  WIF_PROVIDER        = ${WIF_PROVIDER_FULL}"
+echo "  WIF_SERVICE_ACCOUNT = ${SA_EMAIL}"

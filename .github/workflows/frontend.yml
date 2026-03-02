@@ -112,7 +112,6 @@ jobs:
             --region="${{ env.REGION }}" \
             --format='value(status.url)')
           echo "url=$URL" >> $GITHUB_OUTPUT
-          echo "Backend URL: $URL"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -156,7 +155,6 @@ jobs:
             --region="${{ env.REGION }}" \
             --format='value(status.url)')
           echo "url=$URL" >> $GITHUB_OUTPUT
-          echo "Frontend URL: $URL"
 
       # Update CORS trên backend với frontend URL mới
       # QUAN TRỌNG: --update-env-vars (không phải --set-env-vars!)

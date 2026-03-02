@@ -177,7 +177,6 @@ jobs:
             --format='value(host)')
           echo "db_ip=$DB_IP" >> $GITHUB_OUTPUT
           echo "redis_host=$REDIS_HOST" >> $GITHUB_OUTPUT
-          echo "DB IP: $DB_IP, Redis: $REDIS_HOST"
 
       - name: Get Frontend URL for CORS
         id: frontend
@@ -187,7 +186,6 @@ jobs:
             --region="${{ env.REGION }}" \
             --format='value(status.url)' 2>/dev/null || echo "http://localhost:5173")
           echo "url=$FRONTEND_URL" >> $GITHUB_OUTPUT
-          echo "Frontend URL for CORS: $FRONTEND_URL"
 
       - name: Deploy to Cloud Run
         run: |
@@ -229,7 +227,6 @@ jobs:
             --region="${{ env.REGION }}" \
             --format='value(status.url)')
           echo "url=$URL" >> $GITHUB_OUTPUT
-          echo "✓ Backend deployed: $URL"
 
       - name: Summary
         run: |
