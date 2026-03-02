@@ -1,0 +1,40 @@
+# =============================================================================
+# terraform.tfvars.example — Template cho terraform.tfvars
+#
+# Cách dùng:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Điền giá trị thật vào terraform.tfvars
+#   # terraform.tfvars được gitignore (đã có trong .gitignore)
+#
+# QUAN TRỌNG: KHÔNG commit terraform.tfvars lên git!
+# =============================================================================
+
+# GCP Config
+project_id     = "kien-terraform-playground"
+project_number = "7102516370"
+region         = "asia-southeast1"
+
+# App name (dùng làm prefix cho resources)
+app_name = "quiz"
+
+# GitHub repo (WIF restriction)
+github_repo = "wongun78/quiz-app-v2"
+
+# Docker images (được cập nhật tự động bởi CI/CD)
+backend_image  = "asia-southeast1-docker.pkg.dev/kien-terraform-playground/quiz-repo/backend:latest"
+frontend_image = "asia-southeast1-docker.pkg.dev/kien-terraform-playground/quiz-repo/frontend:latest"
+
+# CORS: điền sau khi có frontend URL (xem hướng dẫn trong variables.tf)
+# Lần đầu để trống, sau đó:
+#   terraform output frontend_url  → lấy URL
+#   Điền vào đây → terraform apply lại
+cors_allowed_origins = ""
+# cors_allowed_origins = "https://quiz-frontend-4rbzhybdxq-as.a.run.app"
+
+# =============================================================================
+# SENSITIVE VARIABLES — Điền giá trị thật (KHÔNG commit!)
+# =============================================================================
+db_password    = "CHANGE_ME_strong_password"
+jwt_secret     = "CHANGE_ME_min_32_chars_signing_secret_here"
+admin_password = "CHANGE_ME_Admin@Password2026"
+user_password  = "CHANGE_ME_User@Password2026"

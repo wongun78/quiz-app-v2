@@ -1,0 +1,234 @@
+# =============================================================================
+# terraform.yml — CI/CD cho Terraform
+#
+# Trigger:
+#   - Pull Request → `terraform plan` (xem sẽ thay đổi gì, KHÔNG apply)
+#   - Push lên main → `terraform apply` (thực sự thay đổi infra)
+#   - workflow_dispatch → chạy thủ công từ GitHub UI
+#
+# Auth: Workload Identity Federation (keyless, same as backend/frontend workflows)
+#
+# GitHub Secrets cần có (đã tạo từ Phase 3):
+#   GCP_PROJECT_ID        = kien-terraform-playground
+#   WIF_PROVIDER          = projects/.../providers/github-provider
+#   WIF_SERVICE_ACCOUNT   = quiz-run-sa@...iam.gserviceaccount.com
+#
+# GitHub Secrets thêm cho Terraform (sensitive vars):
+#   TF_VAR_DB_PASSWORD    = password thật
+#   TF_VAR_JWT_SECRET     = jwt secret thật
+#   TF_VAR_ADMIN_PASSWORD = admin password
+#   TF_VAR_USER_PASSWORD  = user password
+#
+# Terraform đọc TF_VAR_* env vars tự động:
+#   TF_VAR_DB_PASSWORD → var.db_password
+# =============================================================================
+name: Terraform
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action"
+        required: true
+        default: "plan"
+        type: choice
+        options: [plan, apply, destroy]
+
+env:
+  TF_VERSION: "1.9.0"
+  WORKING_DIR: ./terraform
+
+# Chỉ chạy 1 workflow tại 1 thời điểm (tránh race condition trên state)
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: false # KHÔNG cancel terraform đang chạy dở → state corruption
+
+jobs:
+  # ===========================================================================
+  # JOB 1: Terraform Validate + Format Check
+  # ===========================================================================
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        # Kiểm tra code formatting — fail nếu không chạy `terraform fmt` trước
+        run: terraform fmt -check -recursive
+        continue-on-error: true # Warn thôi, không fail build
+
+      - name: Terraform Init (để validate)
+        # Dùng -backend=false: chỉ init providers, không kết nối GCS state
+        # Vì job này chỉ validate syntax, không cần state thật
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        # Kiểm tra syntax và logic của .tf files
+        run: terraform validate
+
+  # ===========================================================================
+  # JOB 2: Terraform Plan (chạy trên mọi PR và mọi push)
+  # ===========================================================================
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    needs: validate
+
+    permissions:
+      contents: read
+      id-token: write # Bắt buộc cho WIF
+      pull-requests: write # Để comment plan output lên PR
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        # Kết nối với GCS backend để đọc state file
+        run: terraform init
+
+      - name: Terraform Plan
+        id: plan
+        # TF_VAR_* env vars → Terraform variables (sensitive)
+        env:
+          TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
+          TF_VAR_jwt_secret: ${{ secrets.TF_VAR_JWT_SECRET }}
+          TF_VAR_admin_password: ${{ secrets.TF_VAR_ADMIN_PASSWORD }}
+          TF_VAR_user_password: ${{ secrets.TF_VAR_USER_PASSWORD }}
+        run: |
+          terraform plan \
+            -var-file="environments/dev/terraform.tfvars" \
+            -out=tfplan \
+            -input=false \
+            -no-color \
+            2>&1 | tee plan-output.txt
+        continue-on-error: true # Tiếp tục để comment result lên PR kể cả khi plan fail
+
+      - name: Comment Plan on PR
+        # Chỉ comment nếu đây là Pull Request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const planOutput = fs.readFileSync('${{ env.WORKING_DIR }}/plan-output.txt', 'utf8');
+            const truncated = planOutput.length > 60000
+              ? planOutput.substring(0, 60000) + '\n...(truncated)'
+              : planOutput;
+            const status = '${{ steps.plan.outcome }}' === 'success' ? '✅' : '❌';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ${status} Terraform Plan\n\n<details><summary>Click để xem Plan output</summary>\n\n\`\`\`hcl\n${truncated}\n\`\`\`\n</details>`
+            });
+
+      - name: Upload Plan artifact
+        if: steps.plan.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.WORKING_DIR }}/tfplan
+          retention-days: 7
+
+      - name: Fail if Plan failed
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+  # ===========================================================================
+  # JOB 3: Terraform Apply (chỉ chạy khi merge vào main)
+  # ===========================================================================
+  apply:
+    name: Apply
+    runs-on: ubuntu-latest
+    needs: plan
+
+    # Chỉ apply khi push trực tiếp vào main (không phải PR)
+    # Hoặc khi workflow_dispatch với action = apply
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+
+    # Environment "production" → có thể set manual approval trong GitHub
+    # Settings → Environments → production → Required reviewers
+    environment: production
+
+    permissions:
+      contents: read
+      id-token: write
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Download Plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.WORKING_DIR }}
+
+      - name: Terraform Apply
+        env:
+          TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
+          TF_VAR_jwt_secret: ${{ secrets.TF_VAR_JWT_SECRET }}
+          TF_VAR_admin_password: ${{ secrets.TF_VAR_ADMIN_PASSWORD }}
+          TF_VAR_user_password: ${{ secrets.TF_VAR_USER_PASSWORD }}
+        # Apply từ plan file đã tạo ở job plan → deterministic, không apply diffs mới
+        run: terraform apply -input=false tfplan
+
+      - name: Terraform Output
+        run: terraform output

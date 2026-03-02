@@ -144,7 +144,8 @@ logs/
 
 # Terraform
 .terraform/
-.terraform.lock.hcl
+# .terraform.lock.hcl KHÔNG gitignore — nên commit để lock provider versions
+# (tương tự package-lock.json)
 *.tfstate
 *.tfstate.*
 *.tfplan
