@@ -131,6 +131,8 @@ jobs:
           TF_VAR_jwt_secret: ${{ secrets.TF_VAR_JWT_SECRET }}
           TF_VAR_admin_password: ${{ secrets.TF_VAR_ADMIN_PASSWORD }}
           TF_VAR_user_password: ${{ secrets.TF_VAR_USER_PASSWORD }}
+        # Không dùng continue-on-error: nếu plan fail → job fail → apply KHÔNG chạy
+        # (khi job có needs + custom if:, GitHub bỏ implicit success check)
         run: |
           terraform plan \
             -var-file="environments/dev/terraform.tfvars" \
@@ -138,16 +140,21 @@ jobs:
             -input=false \
             -no-color \
             2>&1 | tee plan-output.txt
-        continue-on-error: true # Tiếp tục để comment result lên PR kể cả khi plan fail
 
       - name: Comment Plan on PR
-        # Chỉ comment nếu đây là Pull Request
-        if: github.event_name == 'pull_request'
+        # always() bắt buộc để step này chạy dù plan step fail
+        # Giúp developer thấy lý do fail ngay trên PR
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const planOutput = fs.readFileSync('${{ env.WORKING_DIR }}/plan-output.txt', 'utf8');
+            let planOutput = '';
+            try {
+              planOutput = fs.readFileSync('${{ env.WORKING_DIR }}/plan-output.txt', 'utf8');
+            } catch (e) {
+              planOutput = 'Plan output file not found.';
+            }
             const truncated = planOutput.length > 60000
               ? planOutput.substring(0, 60000) + '\n...(truncated)'
               : planOutput;
@@ -160,17 +167,12 @@ jobs:
             });
 
       - name: Upload Plan artifact
-        if: steps.plan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           # Dùng run_id để artifact không bị nhầm lẫn giữa các workflow runs
           name: tfplan-${{ github.run_id }}
           path: ${{ env.WORKING_DIR }}/tfplan
           retention-days: 1
-
-      - name: Fail if Plan failed
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
 
   # ===========================================================================
   # JOB 3: Terraform Apply (chỉ chạy khi merge vào main)
