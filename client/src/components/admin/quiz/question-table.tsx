@@ -63,20 +63,6 @@ const QuestionTable = ({
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    fetchAllQuestions();
-  }, []);
-
-  useEffect(() => {
-    if (quizId) {
-      fetchQuestionsInQuiz();
-    }
-  }, [quizId, fetchQuestionsInQuiz]);
-
-  useEffect(() => {
-    filterQuestions();
-  }, [allQuestions, selectedType, filterQuestions]);
-
   const fetchAllQuestions = async () => {
     setIsLoading(true);
     try {
@@ -109,6 +95,20 @@ const QuestionTable = ({
       filtered.map((q, index) => ({ id: q.id, order: index + 1 })),
     );
   }, [allQuestions, selectedType, onQuestionsChange]);
+
+  useEffect(() => {
+    fetchAllQuestions();
+  }, []);
+
+  useEffect(() => {
+    if (quizId) {
+      fetchQuestionsInQuiz();
+    }
+  }, [quizId, fetchQuestionsInQuiz]);
+
+  useEffect(() => {
+    filterQuestions();
+  }, [allQuestions, selectedType, filterQuestions]);
 
   const handleRemoveQuestion = async (questionId: string) => {
     if (!quizId) return;

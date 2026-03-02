@@ -121,8 +121,9 @@ success "IAM binding done: $SA_EMAIL ← $WIF_MEMBER"
 #   - artifactregistry.writer: push Docker images
 #   - run.developer: deploy Cloud Run services
 #   - iam.serviceAccountUser: deploy-as SA (Cloud Run cần permission này)
+#   - redis.viewer: đọc Redis instance info (lấy host IP trong CI/CD)
 info "Bước 4: Cấp thêm roles cho SA (CI/CD needs)"
-for ROLE in "roles/artifactregistry.writer" "roles/run.developer" "roles/iam.serviceAccountUser"; do
+for ROLE in "roles/artifactregistry.writer" "roles/run.developer" "roles/iam.serviceAccountUser" "roles/redis.viewer"; do
   gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:${SA_EMAIL}" \
     --role="$ROLE" \
