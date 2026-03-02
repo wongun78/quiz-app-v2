@@ -54,12 +54,14 @@ const ExamPage = () => {
     mutationFn: (data: ExamSubmissionRequest) => examService.submit(data),
     onSuccess: (result) => {
       toast.success(
-        result.passed ? "Congratulations! You passed!" : "Exam completed"
+        result.passed ? "Congratulations! You passed!" : "Exam completed",
       );
       navigate(ROUTES.EXAM_RESULT(result.submissionId), { state: { result } });
     },
-    onError: (error: any) => {
-      const message = error?.response?.data?.message || "Failed to submit exam";
+    onError: (error: unknown) => {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Failed to submit exam";
       toast.error(message);
       setIsSubmitting(false);
     },
@@ -68,7 +70,7 @@ const ExamPage = () => {
   const handleAnswerSelect = (
     questionId: string,
     answerId: string,
-    questionType: "SINGLE_CHOICE" | "MULTIPLE_CHOICE"
+    questionType: "SINGLE_CHOICE" | "MULTIPLE_CHOICE",
   ) => {
     setSelectedAnswers((prev) => {
       if (questionType === "SINGLE_CHOICE") {
@@ -126,7 +128,7 @@ const ExamPage = () => {
   const handleNextQuestion = () => {
     if (quiz) {
       setCurrentQuestionIndex((prev) =>
-        Math.min(quiz.questions.length - 1, prev + 1)
+        Math.min(quiz.questions.length - 1, prev + 1),
       );
     }
   };
@@ -327,7 +329,7 @@ const ExamPage = () => {
                           handleAnswerSelect(
                             currentQuestion.id,
                             answer.id,
-                            currentQuestion.type
+                            currentQuestion.type,
                           )
                         }
                         className={

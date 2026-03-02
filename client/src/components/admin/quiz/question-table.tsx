@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -38,6 +38,7 @@ import {
 } from "react-icons/fa";
 import type { QuestionResponse } from "@/types/backend";
 import { questionService, quizService } from "@/services";
+import { getApiErrorMessage } from "@/lib/utils";
 import { toast } from "react-toastify";
 
 interface QuestionTableProps {
@@ -56,7 +57,7 @@ const QuestionTable = ({
     QuestionResponse[]
   >([]);
   const [questionsInQuiz, setQuestionsInQuiz] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(0);
@@ -70,50 +71,44 @@ const QuestionTable = ({
     if (quizId) {
       fetchQuestionsInQuiz();
     }
-  }, [quizId]);
+  }, [quizId, fetchQuestionsInQuiz]);
 
   useEffect(() => {
     filterQuestions();
-  }, [allQuestions, selectedType]);
+  }, [allQuestions, selectedType, filterQuestions]);
 
   const fetchAllQuestions = async () => {
     setIsLoading(true);
     try {
       const response = await questionService.getAll({ page: 0, size: 1000 });
       setAllQuestions(response.content);
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || "Failed to fetch questions";
-      toast.error(errorMessage);
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to fetch questions"));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchQuestionsInQuiz = async () => {
+  const fetchQuestionsInQuiz = useCallback(async () => {
     if (!quizId) return;
-
     try {
       const data = await quizService.getQuestions(quizId);
       setQuestionsInQuiz(new Set(data.map((q) => q.id)));
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || "Failed to fetch quiz questions";
-      toast.error(errorMessage);
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to fetch quiz questions"));
     }
-  };
+  }, [quizId]);
 
-  const filterQuestions = () => {
+  const filterQuestions = useCallback(() => {
     let filtered = allQuestions;
     if (selectedType && selectedType !== "all") {
       filtered = allQuestions.filter((q) => q.type === selectedType);
     }
     setFilteredQuestions(filtered);
-
     onQuestionsChange?.(
-      filtered.map((q, index) => ({ id: q.id, order: index + 1 }))
+      filtered.map((q, index) => ({ id: q.id, order: index + 1 })),
     );
-  };
+  }, [allQuestions, selectedType, onQuestionsChange]);
 
   const handleRemoveQuestion = async (questionId: string) => {
     if (!quizId) return;
@@ -122,10 +117,8 @@ const QuestionTable = ({
       await quizService.removeQuestion(quizId, questionId);
       toast.success("Question removed from quiz");
       await fetchQuestionsInQuiz();
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || "Failed to remove question";
-      toast.error(errorMessage);
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to remove question"));
     }
   };
 
@@ -136,7 +129,7 @@ const QuestionTable = ({
 
   const paginatedQuestions = filteredQuestions.slice(
     currentPage * pageSize,
-    (currentPage + 1) * pageSize
+    (currentPage + 1) * pageSize,
   );
   const totalPages = Math.ceil(filteredQuestions.length / pageSize);
 
@@ -180,7 +173,7 @@ const QuestionTable = ({
             ) : (
               paginatedQuestions.map((question) => {
                 const index = filteredQuestions.findIndex(
-                  (q) => q.id === question.id
+                  (q) => q.id === question.id,
                 );
                 const isInQuiz = questionsInQuiz.has(question.id);
                 return (

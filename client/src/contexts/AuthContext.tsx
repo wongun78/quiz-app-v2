@@ -76,13 +76,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const user = await authService.getCurrentUser();
       dispatch({ type: "AUTH_SUCCESS", payload: user });
-    } catch (error: any) {
+    } catch (error: unknown) {
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       dispatch({ type: "AUTH_FAILURE" });
 
+      const axiosError = error as { response?: { status?: number } };
       if (
-        error?.response?.status &&
-        ![401, 403].includes(error.response.status)
+        axiosError?.response?.status &&
+        ![401, 403].includes(axiosError.response.status)
       ) {
         console.error("Auth check failed:", error);
       }
@@ -108,9 +109,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.token);
       dispatch({ type: "AUTH_SUCCESS", payload: response.user });
       toast.success("Login successful!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       dispatch({ type: "AUTH_FAILURE" });
-      const msg = error?.response?.data?.message || "Login failed";
+      const msg =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Login failed";
       toast.error(msg);
       throw error;
     }
@@ -123,9 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.token);
       dispatch({ type: "AUTH_SUCCESS", payload: response.user });
       toast.success("Registration successful!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       dispatch({ type: "AUTH_FAILURE" });
-      const msg = error?.response?.data?.message || "Registration failed";
+      const msg =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Registration failed";
       toast.error(msg);
       throw error;
     }

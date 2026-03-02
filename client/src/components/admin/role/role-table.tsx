@@ -88,8 +88,10 @@ const RoleTable = ({
       await roleService.delete(role.id);
       toast.success("Role deleted successfully");
       onDelete?.();
-    } catch (error: any) {
-      const message = error?.response?.data?.message || "Failed to delete role";
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Failed to delete role";
       toast.error(message);
     } finally {
       setDeletingId(null);
@@ -131,7 +133,7 @@ const RoleTable = ({
           >
             {i + 1}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -310,7 +312,7 @@ const RoleTable = ({
           {roles.length > 0
             ? `${currentPage * pageSize + 1}-${Math.min(
                 (currentPage + 1) * pageSize,
-                totalElements
+                totalElements,
               )} of ${totalElements}`
             : "0 of 0"}
         </span>

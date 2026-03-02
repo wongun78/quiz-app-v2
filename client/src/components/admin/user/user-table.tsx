@@ -90,8 +90,10 @@ const UserTable = ({
       await userService.delete(user.id);
       toast.success("User deleted successfully");
       onDelete?.();
-    } catch (error: any) {
-      const message = error?.response?.data?.message || "Failed to delete user";
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Failed to delete user";
       toast.error(message);
     } finally {
       setDeletingId(null);
@@ -133,7 +135,7 @@ const UserTable = ({
           >
             {i + 1}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 

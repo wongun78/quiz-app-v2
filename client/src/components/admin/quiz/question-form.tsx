@@ -56,7 +56,7 @@ const QuestionForm = ({
 
     if (order > availableQuestions.length) {
       toast.error(
-        `Order number must be between 1 and ${availableQuestions.length}`
+        `Order number must be between 1 and ${availableQuestions.length}`,
       );
       return;
     }
@@ -73,9 +73,10 @@ const QuestionForm = ({
       toast.success(`Question #${order} added to quiz successfully`);
       handleClear();
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error?.response?.data?.message || "Failed to add question";
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Failed to add question";
       toast.error(errorMessage);
     } finally {
       setIsSaving(false);

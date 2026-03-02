@@ -5,6 +5,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Helper để extract error message từ API response
+// Dùng thay cho `catch (error: any)` → `catch (error: unknown)`
+export function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (
+    error != null &&
+    typeof error === "object" &&
+    "response" in error &&
+    error.response != null &&
+    typeof error.response === "object" &&
+    "data" in error.response &&
+    error.response.data != null &&
+    typeof error.response.data === "object" &&
+    "message" in error.response.data &&
+    typeof (error.response.data as { message?: unknown }).message === "string"
+  ) {
+    return (error.response.data as { message: string }).message;
+  }
+  return fallback;
+}
+
 // Gradient utilities for Dino theme
 export const gradients = {
   section: "bg-gradient-to-br from-background via-secondary/10 to-primary/5",

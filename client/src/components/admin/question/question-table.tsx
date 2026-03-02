@@ -77,7 +77,7 @@ const QuestionTable = ({
       title: "Delete Question",
       description: `Are you sure you want to delete question "${question.content.substring(
         0,
-        50
+        50,
       )}..."? This action cannot be undone.`,
       confirmText: "Delete",
       cancelText: "Cancel",
@@ -91,9 +91,10 @@ const QuestionTable = ({
       await questionService.delete(question.id);
       toast.success("Question deleted successfully");
       onDelete?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       const message =
-        error?.response?.data?.message || "Failed to delete question";
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Failed to delete question";
       toast.error(message);
     } finally {
       setDeletingId(null);
@@ -135,7 +136,7 @@ const QuestionTable = ({
           >
             {i + 1}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 

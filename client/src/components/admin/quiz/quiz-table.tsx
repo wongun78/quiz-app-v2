@@ -92,8 +92,10 @@ const QuizTable = ({
       await quizService.delete(quiz.id);
       toast.success("Quiz deleted successfully");
       onDelete?.();
-    } catch (error: any) {
-      const message = error?.response?.data?.message || "Failed to delete quiz";
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Failed to delete quiz";
       toast.error(message);
     } finally {
       setDeletingId(null);
