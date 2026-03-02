@@ -1,36 +1,8 @@
-# =============================================================================
-# main.tf — Provider config + gọi tất cả modules
-#
-# Thiết kế: Root module gọi các child modules theo thứ tự phụ thuộc:
-#
-#   [APIs] → [artifact_registry] → [networking] → [iam]
-#          ↘ [database] ↘
-#          ↘ [redis]    ↘ [secrets] → [cloud_run]
-#          ↘ [iam]      ↗
-#
-# Từng module = 1 "concern" độc lập, dễ test và reuse
-# =============================================================================
-
-# =============================================================================
-# PROVIDER — Google Cloud
-# =============================================================================
 provider "google" {
   project = var.project_id
   region  = var.region
-
-  # Xác thực: ưu tiên theo thứ tự
-  # 1. GOOGLE_APPLICATION_CREDENTIALS env var (CI/CD)
-  # 2. gcloud Application Default Credentials (local dev)
-  # → Không cần service account key hardcode ở đây
 }
 
-# =============================================================================
-# ENABLE APIS — Bật các GCP APIs cần thiết
-#
-# Tại sao? GCP mặc định tắt hết. Phải bật tường minh.
-# disable_on_destroy = false: KHÔNG tắt API khi `terraform destroy`
-#   → Tắt API ngẫu nhiên có thể phá vỡ services khác trong project
-# =============================================================================
 resource "google_project_service" "apis" {
   for_each = toset([
     "run.googleapis.com",
@@ -42,16 +14,13 @@ resource "google_project_service" "apis" {
     "servicenetworking.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "iam.googleapis.com",
-    "iamcredentials.googleapis.com", # Cần cho WIF (Workload Identity)
+    "iamcredentials.googleapis.com",
   ])
 
   service            = each.value
   disable_on_destroy = false
 }
 
-# =============================================================================
-# MODULE: artifact_registry — Docker image registry
-# =============================================================================
 module "artifact_registry" {
   source = "./modules/artifact_registry"
 
@@ -62,9 +31,6 @@ module "artifact_registry" {
   depends_on = [google_project_service.apis]
 }
 
-# =============================================================================
-# MODULE: networking — VPC, VPC Connector, Firewall, Private Peering
-# =============================================================================
 module "networking" {
   source = "./modules/networking"
 
@@ -76,9 +42,6 @@ module "networking" {
   depends_on = [google_project_service.apis]
 }
 
-# =============================================================================
-# MODULE: iam — Service Account, IAM bindings, Workload Identity Federation
-# =============================================================================
 module "iam" {
   source = "./modules/iam"
 
@@ -90,9 +53,6 @@ module "iam" {
   depends_on = [google_project_service.apis]
 }
 
-# =============================================================================
-# MODULE: database — Cloud SQL PostgreSQL
-# =============================================================================
 module "database" {
   source = "./modules/database"
 
@@ -106,9 +66,6 @@ module "database" {
   depends_on = [module.networking]
 }
 
-# =============================================================================
-# MODULE: redis — Memorystore Redis
-# =============================================================================
 module "redis" {
   source = "./modules/redis"
 
@@ -120,9 +77,6 @@ module "redis" {
   depends_on = [module.networking]
 }
 
-# =============================================================================
-# MODULE: secrets — Secret Manager (passwords, JWT secret)
-# =============================================================================
 module "secrets" {
   source = "./modules/secrets"
 
@@ -136,9 +90,6 @@ module "secrets" {
   depends_on = [module.iam]
 }
 
-# =============================================================================
-# MODULE: cloud_run — Deploy Backend + Frontend lên Cloud Run
-# =============================================================================
 module "cloud_run" {
   source = "./modules/cloud_run"
 
@@ -153,7 +104,6 @@ module "cloud_run" {
   backend_image  = var.backend_image
   frontend_image = var.frontend_image
 
-  # CORS: xem hướng dẫn trong variables.tf
   cors_allowed_origins = var.cors_allowed_origins
 
   depends_on = [

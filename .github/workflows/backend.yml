@@ -1,15 +1,3 @@
-# =============================================================================
-# backend.yml — CI/CD cho Spring Boot backend
-#
-# Trigger: push lên main khi có thay đổi trong server/ hoặc file này
-#
-# Luồng:
-#   1. [test]              → chạy Gradle tests với Postgres + Redis thật
-#   2. [build-and-deploy]  → build Docker image (linux/amd64), push Artifact
-#                            Registry, deploy Cloud Run
-#
-# Auth: Workload Identity Federation (không cần service account key!)
-# =============================================================================
 name: Deploy Backend
 
 on:
@@ -22,25 +10,19 @@ on:
     branches: [main]
     paths:
       - "server/**"
-  workflow_dispatch: # Cho phép trigger thủ công từ GitHub UI hoặc sau khi fix IAM
+  workflow_dispatch:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: asia-southeast1
   SERVICE_NAME: quiz-backend
-  # Artifact Registry (dùng AR thay GCR): format = REGION-docker.pkg.dev/PROJECT/REPO/IMAGE
   IMAGE: asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/quiz-repo/backend
 
-# =============================================================================
-# JOB 1: Chạy tests
-# =============================================================================
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
 
-    # Service containers: chạy Postgres + Redis như Docker containers
-    # GitHub Actions tự start/stop chúng, accessible qua localhost
     services:
       postgres:
         image: postgres:16-alpine
@@ -79,7 +61,6 @@ jobs:
         with:
           java-version: "21"
           distribution: "temurin"
-          # Cache Gradle dependencies → tiết kiệm ~1-2 phút mỗi lần chạy
           cache: gradle
 
       - name: Grant execute permission for gradlew
@@ -88,7 +69,6 @@ jobs:
       - name: Run tests
         run: ./gradlew test --no-daemon
         env:
-          # Override application.properties với test values
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/quiz_db_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
@@ -99,10 +79,9 @@ jobs:
           JWT_SECRET: test-jwt-secret-for-ci-at-least-32-chars-long
           ADMIN_PASSWORD: Admin@Test2026
           USER_PASSWORD: User@Test2026
-          DATA_INIT_ENABLED: "false" # Không seed data trong test
+          DATA_INIT_ENABLED: "false"
 
       - name: Upload test reports
-        # Luôn upload dù test fail → dễ debug
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -110,27 +89,20 @@ jobs:
           path: server/build/reports/tests/test/
           retention-days: 7
 
-  # =============================================================================
-  # JOB 2: Build Docker image và Deploy lên Cloud Run
-  # =============================================================================
   build-and-deploy:
     name: Build & Deploy to Cloud Run
     runs-on: ubuntu-latest
-    # Chỉ deploy khi push lên main (không deploy khi chỉ là PR)
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    needs: test # Phải pass test trước mới deploy
+    needs: test
 
-    # QUAN TRỌNG: cần id-token permission để WIF hoạt động
     permissions:
       contents: read
-      id-token: write # Cho phép tạo OIDC token để xác thực với GCP
+      id-token: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Xác thực với GCP qua Workload Identity Federation
-      # → Không cần JSON key, không cần lưu secret nhạy cảm
       - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
         with:
@@ -140,12 +112,9 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Cấu hình Docker để push lên Artifact Registry
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
 
-      # Set up QEMU để build cross-platform (arm64 → amd64)
-      # Cần thiết vì Cloud Run chạy linux/amd64
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -156,17 +125,14 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./server
-          # linux/amd64: bắt buộc cho Cloud Run (x86-64)
           platforms: linux/amd64
           push: true
           tags: |
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:${{ github.sha }}
-          # Cache layers từ Artifact Registry → build nhanh hơn lần sau
           cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
           cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
 
-      # Lấy các giá trị runtime từ GCP (không hardcode trong workflow)
       - name: Get infrastructure values
         id: infra
         run: |
@@ -181,7 +147,6 @@ jobs:
       - name: Get Frontend URL for CORS
         id: frontend
         run: |
-          # Lấy frontend URL hiện tại để set CORS — fallback về localhost nếu chưa deploy
           FRONTEND_URL=$(gcloud run services describe quiz-frontend \
             --region="${{ env.REGION }}" \
             --format='value(status.url)' 2>/dev/null || echo "http://localhost:5173")

@@ -1,27 +1,3 @@
-# =============================================================================
-# terraform.yml — CI/CD cho Terraform
-#
-# Trigger:
-#   - Pull Request → `terraform plan` (xem sẽ thay đổi gì, KHÔNG apply)
-#   - Push lên main → `terraform apply` (thực sự thay đổi infra)
-#   - workflow_dispatch → chạy thủ công từ GitHub UI
-#
-# Auth: Workload Identity Federation (keyless, same as backend/frontend workflows)
-#
-# GitHub Secrets cần có (đã tạo từ Phase 3):
-#   GCP_PROJECT_ID        = kien-terraform-playground
-#   WIF_PROVIDER          = projects/.../providers/github-provider
-#   WIF_SERVICE_ACCOUNT   = quiz-run-sa@...iam.gserviceaccount.com
-#
-# GitHub Secrets thêm cho Terraform (sensitive vars):
-#   TF_VAR_DB_PASSWORD    = password thật
-#   TF_VAR_JWT_SECRET     = jwt secret thật
-#   TF_VAR_ADMIN_PASSWORD = admin password
-#   TF_VAR_USER_PASSWORD  = user password
-#
-# Terraform đọc TF_VAR_* env vars tự động:
-#   TF_VAR_DB_PASSWORD → var.db_password
-# =============================================================================
 name: Terraform
 
 on:
@@ -47,15 +23,11 @@ env:
   TF_VERSION: "1.9.0"
   WORKING_DIR: ./terraform
 
-# Chỉ chạy 1 workflow tại 1 thời điểm (tránh race condition trên state)
 concurrency:
   group: terraform-${{ github.ref }}
-  cancel-in-progress: false # KHÔNG cancel terraform đang chạy dở → state corruption
+  cancel-in-progress: false
 
 jobs:
-  # ===========================================================================
-  # JOB 1: Terraform Validate + Format Check
-  # ===========================================================================
   validate:
     name: Validate
     runs-on: ubuntu-latest
@@ -74,22 +46,15 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Format Check
-        # Kiểm tra code formatting — fail nếu không chạy `terraform fmt` trước
         run: terraform fmt -check -recursive
-        continue-on-error: true # Warn thôi, không fail build
+        continue-on-error: true
 
-      - name: Terraform Init (để validate)
-        # Dùng -backend=false: chỉ init providers, không kết nối GCS state
-        # Vì job này chỉ validate syntax, không cần state thật
+      - name: Terraform Init (validate only)
         run: terraform init -backend=false
 
       - name: Terraform Validate
-        # Kiểm tra syntax và logic của .tf files
         run: terraform validate
 
-  # ===========================================================================
-  # JOB 2: Terraform Plan (chạy trên mọi PR và mọi push)
-  # ===========================================================================
   plan:
     name: Plan
     runs-on: ubuntu-latest
@@ -97,8 +62,8 @@ jobs:
 
     permissions:
       contents: read
-      id-token: write # Bắt buộc cho WIF
-      pull-requests: write # Để comment plan output lên PR
+      id-token: write
+      pull-requests: write
 
     defaults:
       run:
@@ -120,20 +85,15 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Init
-        # Kết nối với GCS backend để đọc state file
         run: terraform init
 
       - name: Terraform Plan
         id: plan
-        # TF_VAR_* env vars → Terraform variables (sensitive)
         env:
           TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
           TF_VAR_jwt_secret: ${{ secrets.TF_VAR_JWT_SECRET }}
           TF_VAR_admin_password: ${{ secrets.TF_VAR_ADMIN_PASSWORD }}
           TF_VAR_user_password: ${{ secrets.TF_VAR_USER_PASSWORD }}
-        # Không dùng continue-on-error: nếu plan fail → job fail → apply KHÔNG chạy
-        # pipefail: bắt buộc để pipe không nuốt exit code của terraform
-        #   (không có pipefail: `terraform plan | tee` → exit code của tee = 0 dù terraform fail)
         run: |
           set -o pipefail
           terraform plan \
@@ -144,8 +104,6 @@ jobs:
             2>&1 | tee plan-output.txt
 
       - name: Comment Plan on PR
-        # always() bắt buộc để step này chạy dù plan step fail
-        # Giúp developer thấy lý do fail ngay trên PR
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -171,32 +129,19 @@ jobs:
       - name: Upload Plan artifact
         uses: actions/upload-artifact@v4
         with:
-          # Dùng run_id để artifact không bị nhầm lẫn giữa các workflow runs
           name: tfplan-${{ github.run_id }}
           path: ${{ env.WORKING_DIR }}/tfplan
           retention-days: 1
 
-  # ===========================================================================
-  # JOB 3: Terraform Apply (chỉ chạy khi merge vào main)
-  # ===========================================================================
   apply:
     name: Apply
     runs-on: ubuntu-latest
     needs: plan
 
-    # Chỉ apply khi:
-    # 1. Plan job thành công (needs.plan.result == 'success') — BẮT BUỘC!
-    #    Khi có custom if:, GitHub bỏ implicit success check → phải check tường minh
-    # 2. Push lên main hoặc workflow_dispatch với action = apply
     if: |
       needs.plan.result == 'success' &&
       ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'))
-
-    # Tip: Tạo Environment "production" trong GitHub Settings → Environments
-    # → Thêm "Required reviewers" để yêu cầu approve trước khi apply
-    # → Sau khi tạo xong, bỏ comment dòng dưới:
-    # environment: production
 
     permissions:
       contents: read
@@ -236,7 +181,6 @@ jobs:
           TF_VAR_jwt_secret: ${{ secrets.TF_VAR_JWT_SECRET }}
           TF_VAR_admin_password: ${{ secrets.TF_VAR_ADMIN_PASSWORD }}
           TF_VAR_user_password: ${{ secrets.TF_VAR_USER_PASSWORD }}
-        # Apply từ plan file đã tạo ở job plan → deterministic, không apply diffs mới
         run: terraform apply -input=false tfplan
 
       - name: Terraform Output

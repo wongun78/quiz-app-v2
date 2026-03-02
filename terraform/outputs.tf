@@ -1,12 +1,3 @@
-# =============================================================================
-# outputs.tf — Export giá trị quan trọng sau khi apply
-#
-# Dùng để:
-# 1. Xem Quick reference: `terraform output`
-# 2. Pipe vào scripts: `terraform output -raw backend_url`
-# 3. Dùng trong workspace khác hoặc module khác qua remote state
-# =============================================================================
-
 output "backend_url" {
   description = "URL của Cloud Run backend service"
   value       = module.cloud_run.backend_url

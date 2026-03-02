@@ -1,18 +1,3 @@
-# =============================================================================
-# frontend.yml — CI/CD cho React/Vite frontend
-#
-# Trigger: push lên main khi có thay đổi trong client/ hoặc file này
-#
-# Luồng:
-#   1. [test]              → lint + type check + build validation
-#   2. [build-and-deploy]  → lấy backend URL động từ gcloud, build Docker
-#                            image (linux/amd64 + VITE_API_BASE_URL baked in),
-#                            push Artifact Registry, deploy Cloud Run,
-#                            update CORS trên backend (--update-env-vars!)
-#
-# Trick quan trọng: VITE_API_BASE_URL phải biết lúc BUILD (Vite bundle tĩnh)
-# → luôn lấy URL từ backend service đang chạy trên Cloud Run
-# =============================================================================
 name: Deploy Frontend
 
 on:
@@ -34,9 +19,6 @@ env:
   BACKEND_SERVICE_NAME: quiz-backend
   IMAGE: asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/quiz-repo/frontend
 
-# =============================================================================
-# JOB 1: Lint + Type Check + Build validation
-# =============================================================================
 jobs:
   test:
     name: Lint & Type Check
@@ -54,7 +36,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          # Cache node_modules theo package-lock.json → không cần `npm ci` lại
           cache: "npm"
           cache-dependency-path: client/package-lock.json
 
@@ -67,16 +48,11 @@ jobs:
       - name: Type check (TypeScript)
         run: npx tsc --noEmit
 
-      # Build với placeholder URL — chỉ để validate build không lỗi
-      # URL thật sẽ được dùng trong job deploy
       - name: Build validation
         run: npm run build
         env:
           VITE_API_BASE_URL: https://placeholder.run.app/api/v1
 
-  # =============================================================================
-  # JOB 2: Build Docker image và Deploy lên Cloud Run
-  # =============================================================================
   build-and-deploy:
     name: Build & Deploy to Cloud Run
     runs-on: ubuntu-latest
@@ -103,8 +79,6 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
 
-      # Lấy backend URL thật từ Cloud Run service đang chạy
-      # → bake vào VITE_API_BASE_URL lúc Docker build
       - name: Get Backend URL
         id: backend
         run: |
@@ -125,8 +99,6 @@ jobs:
           context: ./client
           platforms: linux/amd64
           push: true
-          # VITE_API_BASE_URL được bake vào JavaScript bundle lúc build
-          # Nếu URL thay đổi → phải rebuild image mới
           build-args: |
             VITE_API_BASE_URL=${{ steps.backend.outputs.url }}/api/v1
           tags: |
@@ -156,10 +128,6 @@ jobs:
             --format='value(status.url)')
           echo "url=$URL" >> $GITHUB_OUTPUT
 
-      # Update CORS trên backend với frontend URL mới
-      # QUAN TRỌNG: --update-env-vars (không phải --set-env-vars!)
-      # --set-env-vars sẽ XÓA HẾT env vars khác (DB, Redis, v.v.)
-      # --update-env-vars chỉ ADD/MODIFY biến được chỉ định
       - name: Update CORS on Backend
         run: |
           gcloud run services update ${{ env.BACKEND_SERVICE_NAME }} \

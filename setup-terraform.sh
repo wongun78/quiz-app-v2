@@ -1,16 +1,4 @@
 #!/usr/bin/env bash
-# =============================================================================
-# Chuẩn bị hạ tầng cho Terraform (chạy 1 lần)
-#
-# Terraform cần:
-# 1. GCS bucket để lưu state (phải tạo TRƯỚC `terraform init`)
-# 2. SA quiz-run-sa cần thêm quyền để Terraform quản lý GCP resources
-#
-# Chạy 1 lần từ local machine (cần gcloud auth):
-#   chmod +x setup-terraform.sh
-#   ./setup-terraform.sh
-# =============================================================================
-
 set -euo pipefail
 
 PROJECT_ID="kien-terraform-playground"
@@ -25,16 +13,7 @@ warn()    { echo -e "${YELLOW}⚠ $1${NC}"; }
 
 echo "Terraform setup: $PROJECT_ID"
 
-# =============================================================================
-# Bước 1: Tạo GCS bucket cho Terraform state
-# =============================================================================
 info "GCS state bucket"
-
-# Tại sao cần bucket riêng?
-# → Terraform state là "database" lưu trạng thái hiện tại của infra
-# → Remote state = team members và CI/CD share cùng state
-# → Versioning = có thể rollback state nếu bị corrupt
-
 if gcloud storage buckets describe "gs://${STATE_BUCKET}" &>/dev/null; then
   warn "Bucket đã tồn tại: gs://${STATE_BUCKET}"
 else
@@ -44,45 +23,31 @@ else
   success "Bucket tạo xong: gs://${STATE_BUCKET}"
 fi
 
-# Bật versioning — để có thể rollback state
 gcloud storage buckets update "gs://${STATE_BUCKET}" --versioning
-success "Versioning enabled trên gs://${STATE_BUCKET}"
+success "Versioning enabled: gs://${STATE_BUCKET}"
 
-# =============================================================================
-# Bước 2: Cấp quyền cho SA quiz-run-sa quản lý state
-# =============================================================================
 info "SA → state bucket IAM"
-
-# Terraform cần đọc và ghi state file trong bucket
 gcloud storage buckets add-iam-policy-binding "gs://${STATE_BUCKET}" \
   --member="serviceAccount:${SA_EMAIL}" \
   --role="roles/storage.objectAdmin"
 
 success "SA có thể read/write state bucket"
 
-# =============================================================================
-# Bước 3: Cấp quyền cho SA để Terraform quản lý GCP resources
-# =============================================================================
-info "IAM roles cho Terraform SA"
-
-# Terraform cần tạo/xóa/update GCP resources → cần quyền rộng hơn CI/CD
-# Lưu ý: trong production nên tạo terraform-sa riêng biệt với quiz-run-sa
-# nhưng cho learning purposes, dùng chung 1 SA
-
+info "IAM roles for Terraform SA"
 TERRAFORM_ROLES=(
-  "roles/storage.objectAdmin"           # Quản lý state bucket
-  "roles/vpcaccess.admin"               # Tạo VPC Connector
-  "roles/compute.networkAdmin"          # Tạo VPC, Subnet, VPC Connector
-  "roles/compute.securityAdmin"        # Tạo/cập nhật Firewall rules
-  "roles/servicenetworking.networksAdmin" # Private service connection
-  "roles/cloudsql.admin"               # Tạo/xóa Cloud SQL
-  "roles/redis.admin"                  # Tạo/xóa Redis
-  "roles/artifactregistry.admin"       # Tạo/cập nhật Artifact Registry repo
-  "roles/secretmanager.admin"          # Tạo/xóa secrets
-  "roles/iam.serviceAccountAdmin"      # Tạo/xóa Service Accounts
-  "roles/iam.workloadIdentityPoolAdmin" # Tạo WIF pool/provider
-  "roles/serviceusage.serviceUsageAdmin" # Enable/disable APIs
-  "roles/resourcemanager.projectIamAdmin" # Đọc/ghi project IAM policy (google_project_iam_member)
+  "roles/storage.objectAdmin"
+  "roles/vpcaccess.admin"
+  "roles/compute.networkAdmin"
+  "roles/compute.securityAdmin"
+  "roles/servicenetworking.networksAdmin"
+  "roles/cloudsql.admin"
+  "roles/redis.admin"
+  "roles/artifactregistry.admin"
+  "roles/secretmanager.admin"
+  "roles/iam.serviceAccountAdmin"
+  "roles/iam.workloadIdentityPoolAdmin"
+  "roles/serviceusage.serviceUsageAdmin"
+  "roles/resourcemanager.projectIamAdmin"
 )
 
 for ROLE in "${TERRAFORM_ROLES[@]}"; do
@@ -94,11 +59,8 @@ for ROLE in "${TERRAFORM_ROLES[@]}"; do
   success "$ROLE"
 done
 
-# =============================================================================
-# DONE
-# =============================================================================
 echo ""
-echo "DONE. Tiếp theo:"
+echo "Done. Next:"
 echo "  cd terraform/ && terraform init"
-echo "  ./import.sh                                   # import existing resources"
+echo "  ./import.sh"
 echo "  terraform plan -var-file=environments/dev/terraform.tfvars"

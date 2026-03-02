@@ -1,12 +1,3 @@
-# =============================================================================
-# modules/database/main.tf — Cloud SQL PostgreSQL
-#
-# Instance settings:
-# - db-f1-micro: 1 shared vCPU, 614MB RAM (~$7/tháng) — đủ cho dev/demo
-# - No public IP: chỉ private IP trong VPC → bảo mật
-# - HDD storage: rẻ hơn SSD, đủ cho dev
-# =============================================================================
-
 resource "google_sql_database_instance" "main" {
   name             = var.instance_name
   project          = var.project_id
@@ -22,39 +13,30 @@ resource "google_sql_database_instance" "main" {
     disk_autoresize = false
 
     ip_configuration {
-      # KHÔNG assign public IP — chỉ private IP trong VPC (bảo mật)
       ipv4_enabled    = false
       private_network = var.vpc_id
     }
 
-    # Backup tắt cho dev (tiết kiệm tiền)
     backup_configuration {
       enabled = false
     }
   }
 
-  # deletion_protection = true cho production!
-  # Đặt false để `terraform destroy` hoạt động được trong môi trường học
   deletion_protection = false
 
   lifecycle {
-    # private_network là ForceNew field — ignore để tránh Cloud SQL replacement
-    # Thay đổi private_network trên Cloud SQL existing cần delete và recreate DB
-    # nên ta manage nó ngoài Terraform
     ignore_changes = [settings[0].ip_configuration[0].private_network]
   }
 
   depends_on = [var.vpc_id]
 }
 
-# Database bên trong instance
 resource "google_sql_database" "db" {
   name     = var.db_name
   instance = google_sql_database_instance.main.name
   project  = var.project_id
 }
 
-# Đặt password cho user postgres
 resource "google_sql_user" "postgres" {
   name     = "postgres"
   instance = google_sql_database_instance.main.name
