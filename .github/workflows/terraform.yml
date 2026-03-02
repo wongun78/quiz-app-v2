@@ -181,9 +181,12 @@ jobs:
 
     # Chỉ apply khi push trực tiếp vào main (không phải PR)
     # Hoặc khi workflow_dispatch với action = apply
+    # TẮT TẠM: cần chạy `terraform/import.sh` từ local trước khi enable apply
+    # Bỏ comment điều kiện bên dưới sau khi import xong
     if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+      false &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'))
 
     # Tip: Tạo Environment "production" trong GitHub Settings → Environments
     # → Thêm "Required reviewers" để yêu cầu approve trước khi apply
