@@ -16,11 +16,11 @@ resource "google_compute_network" "vpc" {
   project = var.project_id
 
   # auto: GCP tự tạo 1 subnet cho mỗi region
-  # custom: ta tự định nghĩa subnets — cần thiết cho production
-  # Dùng auto cho simplicity; đủ cho học tập
   auto_create_subnetworks = true
 
-  description = "VPC cho ${var.vpc_name} app"
+  # KHÔNG thêm description ở đây: description là ForceNew field
+  # Thêm description sẽ force destroy+recreate toàn bộ VPC và cascade
+  # xuống Cloud SQL, Redis, VPC Connector → downtime
 }
 
 # =============================================================================
@@ -34,12 +34,20 @@ resource "google_vpc_access_connector" "connector" {
   # IP range RIÊNG cho connector — không được trùng với VPC subnets (10.128.0.0/9 mặc định)
   # 10.8.0.0/28 = 16 IPs, đủ cho development
   ip_cidr_range = "10.8.0.0/28"
-  network       = google_compute_network.vpc.id
+
+  # Dùng .name ("quiz-vpc") thay vì .id (full resource path)
+  # Existing resource lưu short name → dùng id sẽ thấy diff → ForceNew → replace
+  network = google_compute_network.vpc.name
 
   # e2-micro × 2-3 instances — đủ throughput cho demo/dev, tiết kiệm chi phí
   machine_type   = "e2-micro"
   min_instances  = 2
   max_instances  = 3
+
+  lifecycle {
+    # network là ForceNew field — ignore để tránh accidental replacement
+    ignore_changes = [network]
+  }
 }
 
 # =============================================================================
@@ -56,11 +64,17 @@ resource "google_compute_global_address" "private_service_range" {
   name    = "google-managed-services-${var.vpc_name}"
   project = var.project_id
 
-  purpose      = "VPC_PEERING"
-  address_type = "INTERNAL"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
   prefix_length = 16 # /16 = 65536 IPs — đủ cho Google để assign Cloud SQL IPs
 
   network = google_compute_network.vpc.id
+
+  lifecycle {
+    # network là ForceNew field, và format URL có thể khác khi import
+    # (https://... vs projects/...) → ignore để tránh replacement
+    ignore_changes = [network]
+  }
 }
 
 # Bước 2: Tạo VPC peering với servicenetworking
@@ -69,6 +83,10 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   service = "servicenetworking.googleapis.com"
 
   reserved_peering_ranges = [google_compute_global_address.private_service_range.name]
+
+  lifecycle {
+    ignore_changes = [network]
+  }
 }
 
 # =============================================================================

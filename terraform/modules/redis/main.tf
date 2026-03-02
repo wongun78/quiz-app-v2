@@ -18,4 +18,10 @@ resource "google_redis_instance" "cache" {
   authorized_network = var.vpc_id
 
   display_name = "Quiz App Cache"
+
+  lifecycle {
+    # authorized_network là ForceNew field — ignore để tránh Redis replacement
+    # (format URL có thể khác nhau sau khi import)
+    ignore_changes = [authorized_network]
+  }
 }

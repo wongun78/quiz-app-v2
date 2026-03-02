@@ -11,7 +11,7 @@ backend_image  = "asia-southeast1-docker.pkg.dev/kien-terraform-playground/quiz-
 frontend_image = "asia-southeast1-docker.pkg.dev/kien-terraform-playground/quiz-repo/frontend:latest"
 
 # Điền sau khi có frontend URL
-cors_allowed_origins = ""
+cors_allowed_origins = "https://quiz-frontend-4rbzhybdxq-as.a.run.app"
 
 # NOTE: sensitive vars (db_password, jwt_secret, etc.) KHÔNG điền ở đây
 # Dùng: terraform apply -var="db_password=$DB_PASSWORD" hoặc TF_VAR_* env vars

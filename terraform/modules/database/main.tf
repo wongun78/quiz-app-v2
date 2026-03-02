@@ -37,6 +37,13 @@ resource "google_sql_database_instance" "main" {
   # Đặt false để `terraform destroy` hoạt động được trong môi trường học
   deletion_protection = false
 
+  lifecycle {
+    # private_network là ForceNew field — ignore để tránh Cloud SQL replacement
+    # Thay đổi private_network trên Cloud SQL existing cần delete và recreate DB
+    # nên ta manage nó ngoài Terraform
+    ignore_changes = [settings[0].ip_configuration[0].private_network]
+  }
+
   depends_on = [var.vpc_id]
 }
 
