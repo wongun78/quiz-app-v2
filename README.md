@@ -8,16 +8,16 @@ Full-stack quiz platform. Spring Boot 4 backend + React 19 frontend, deployed on
 
 ## Stack
 
-| Layer | Tech |
-|---|---|
-| Backend | Java 21, Spring Boot 4.0.2, Spring Security 6, Gradle |
-| Frontend | React 19.2, TypeScript 5.9, Vite (rolldown) 7.2 |
-| Database | PostgreSQL 16 (Cloud SQL private IP) |
-| Cache / Rate limit | Redis 7, Lettuce, Redisson, Bucket4j |
-| Auth | JWT (24h access + 7d refresh) + BCrypt |
-| Infra | GCP: Cloud Run, Cloud SQL, Memorystore Redis, VPC, Secret Manager, Artifact Registry |
-| IaC | Terraform 1.9 — 7 modules, GCS remote state |
-| CI/CD | GitHub Actions + Workload Identity Federation (keyless) |
+| Layer              | Tech                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| Backend            | Java 21, Spring Boot 4.0.2, Spring Security 6, Gradle                                |
+| Frontend           | React 19.2, TypeScript 5.9, Vite (rolldown) 7.2                                      |
+| Database           | PostgreSQL 16 (Cloud SQL private IP)                                                 |
+| Cache / Rate limit | Redis 7, Lettuce, Redisson, Bucket4j                                                 |
+| Auth               | JWT (24h access + 7d refresh) + BCrypt                                               |
+| Infra              | GCP: Cloud Run, Cloud SQL, Memorystore Redis, VPC, Secret Manager, Artifact Registry |
+| IaC                | Terraform 1.9 — 7 modules, GCS remote state                                          |
+| CI/CD              | GitHub Actions + Workload Identity Federation (keyless)                              |
 
 ---
 
@@ -53,14 +53,15 @@ docker-compose up -d
 cd client && npm install && npm run dev
 ```
 
-| Service | URL |
-|---|---|
-| Frontend | http://localhost:5173 |
-| Backend API | http://localhost:8080 |
-| Swagger UI | http://localhost:8080/swagger-ui.html |
-| Health | http://localhost:8080/actuator/health |
+| Service     | URL                                   |
+| ----------- | ------------------------------------- |
+| Frontend    | http://localhost:5173                 |
+| Backend API | http://localhost:8080                 |
+| Swagger UI  | http://localhost:8080/swagger-ui.html |
+| Health      | http://localhost:8080/actuator/health |
 
 **Test accounts** (set via `ADMIN_PASSWORD` / `USER_PASSWORD` env vars):
+
 - Admin: `rex@dinoquiz.academy`
 - User: `veloci@dinoquiz.academy`
 
@@ -100,6 +101,7 @@ All use **Workload Identity Federation** — no JSON keys stored anywhere.
 **terraform.yml:** `validate` → `plan` (on any push/PR) → `apply` (main push only, requires `needs.plan.result == 'success'`)
 
 **GitHub Secrets required:**
+
 ```
 GCP_PROJECT_ID          kien-terraform-playground
 WIF_PROVIDER            projects/7102516370/.../providers/github-provider
@@ -147,10 +149,10 @@ cp .env.example .env   # fill in credentials
 
 ## Estimated Cost (GCP, dev)
 
-| Resource | ~USD/month |
-|---|---|
-| Cloud SQL db-f1-micro | $15 |
-| Memorystore Redis 1GB | $25 |
-| VPC Connector | $9 |
-| Cloud Run | $9 |
-| **Total** | **~$58** |
+| Resource              | ~USD/month |
+| --------------------- | ---------- |
+| Cloud SQL db-f1-micro | $15        |
+| Memorystore Redis 1GB | $25        |
+| VPC Connector         | $9         |
+| Cloud Run             | $9         |
+| **Total**             | **~$58**   |

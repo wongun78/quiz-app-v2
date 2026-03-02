@@ -441,7 +441,7 @@ cmd_status() {
 }
 
 # =============================================================================
-# STEP: destroy — Xóa toàn bộ (tránh tiếp tục tốn tiền)
+# STEP: destroy — Xóa toàn bộ
 # =============================================================================
 cmd_destroy() {
   warn "Sẽ xóa toàn bộ resources của quiz app!"

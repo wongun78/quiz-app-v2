@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# setup-terraform.sh — Chuẩn bị hạ tầng cho Terraform (chạy 1 lần)
+# Chuẩn bị hạ tầng cho Terraform (chạy 1 lần)
 #
 # Terraform cần:
 # 1. GCS bucket để lưu state (phải tạo TRƯỚC `terraform init`)

@@ -6,17 +6,17 @@ SPA for the Quiz platform. React 19 + TypeScript 5.9 + Vite (rolldown) + Tailwin
 
 ## Stack
 
-| | |
-|---|---|
-| Framework | React 19.2, TypeScript 5.9 |
-| Build | Vite (rolldown) 7.2 |
-| Routing | React Router 7.10 |
-| Server state | TanStack Query v5 |
-| Client state | Zustand 5, React Context (Auth, Theme) |
-| Forms | React Hook Form 7.69 + Zod 4.3 |
-| HTTP | Axios 1.13 + async-mutex (token refresh) |
-| UI | Tailwind CSS 4.1, shadcn/ui (Radix UI), Lucide React |
-| Testing | Vitest 4, @testing-library/react 16 |
+|              |                                                      |
+| ------------ | ---------------------------------------------------- |
+| Framework    | React 19.2, TypeScript 5.9                           |
+| Build        | Vite (rolldown) 7.2                                  |
+| Routing      | React Router 7.10                                    |
+| Server state | TanStack Query v5                                    |
+| Client state | Zustand 5, React Context (Auth, Theme)               |
+| Forms        | React Hook Form 7.69 + Zod 4.3                       |
+| HTTP         | Axios 1.13 + async-mutex (token refresh)             |
+| UI           | Tailwind CSS 4.1, shadcn/ui (Radix UI), Lucide React |
+| Testing      | Vitest 4, @testing-library/react 16                  |
 
 ---
 
@@ -30,6 +30,7 @@ npm run dev       # http://localhost:5173
 ```
 
 Environment (`.env`):
+
 ```
 VITE_API_BASE_URL=http://localhost:8080/api/v1
 ```

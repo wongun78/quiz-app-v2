@@ -6,18 +6,18 @@ REST API for the Quiz platform. Java 21 + Spring Boot 4.0.2 + PostgreSQL 16 + Re
 
 ## Stack
 
-| | |
-|---|---|
-| Language | Java 21 |
-| Framework | Spring Boot 4.0.2, Spring Security 6 |
-| Build | Gradle 9.2 (Kotlin DSL) |
-| Database | PostgreSQL 16 — Spring Data JPA (Hibernate) |
-| Cache | Redis 7 — Spring Cache + Lettuce + Redisson |
+|               |                                                       |
+| ------------- | ----------------------------------------------------- |
+| Language      | Java 21                                               |
+| Framework     | Spring Boot 4.0.2, Spring Security 6                  |
+| Build         | Gradle 9.2 (Kotlin DSL)                               |
+| Database      | PostgreSQL 16 — Spring Data JPA (Hibernate)           |
+| Cache         | Redis 7 — Spring Cache + Lettuce + Redisson           |
 | Rate limiting | Bucket4j 8.10.1 + Redisson (distributed token bucket) |
-| Auth | JJWT 0.12.6 — 24h access token + 7d refresh token |
-| Mapping | MapStruct 1.6.3 |
-| Validation | Bean Validation + i18n messages (vi/en) |
-| API docs | Springdoc OpenAPI 3 (Swagger UI) |
+| Auth          | JJWT 0.12.6 — 24h access token + 7d refresh token     |
+| Mapping       | MapStruct 1.6.3                                       |
+| Validation    | Bean Validation + i18n messages (vi/en)               |
+| API docs      | Springdoc OpenAPI 3 (Swagger UI)                      |
 
 ---
 
@@ -37,31 +37,31 @@ cp .env.example .env   # fill in DB_PASSWORD, JWT_SECRET, ADMIN_PASSWORD, USER_P
 ./gradlew bootRun
 ```
 
-| Endpoint | URL |
-|---|---|
-| API base | http://localhost:8080 |
+| Endpoint   | URL                                   |
+| ---------- | ------------------------------------- |
+| API base   | http://localhost:8080                 |
 | Swagger UI | http://localhost:8080/swagger-ui.html |
-| Health | http://localhost:8080/actuator/health |
+| Health     | http://localhost:8080/actuator/health |
 
 ---
 
 ## Environment variables
 
-| Variable | Default | Required |
-|---|---|---|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/quiz_db` | |
-| `DB_USERNAME` | `postgres` | |
-| `DB_PASSWORD` | — | ✓ |
-| `JWT_SECRET` | — | ✓ (min 256-bit) |
-| `JWT_EXPIRATION` | `86400000` (24h ms) | |
-| `JWT_REFRESH_EXPIRATION` | `604800000` (7d ms) | |
-| `REDIS_HOST` | `localhost` | |
-| `REDIS_PORT` | `6379` | |
-| `REDIS_PASSWORD` | _(empty)_ | |
-| `ADMIN_PASSWORD` | — | ✓ |
-| `USER_PASSWORD` | — | ✓ |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | |
-| `DATA_INIT_ENABLED` | `false` | |
+| Variable                 | Default                                    | Required        |
+| ------------------------ | ------------------------------------------ | --------------- |
+| `DB_URL`                 | `jdbc:postgresql://localhost:5432/quiz_db` |                 |
+| `DB_USERNAME`            | `postgres`                                 |                 |
+| `DB_PASSWORD`            | —                                          | ✓               |
+| `JWT_SECRET`             | —                                          | ✓ (min 256-bit) |
+| `JWT_EXPIRATION`         | `86400000` (24h ms)                        |                 |
+| `JWT_REFRESH_EXPIRATION` | `604800000` (7d ms)                        |                 |
+| `REDIS_HOST`             | `localhost`                                |                 |
+| `REDIS_PORT`             | `6379`                                     |                 |
+| `REDIS_PASSWORD`         | _(empty)_                                  |                 |
+| `ADMIN_PASSWORD`         | —                                          | ✓               |
+| `USER_PASSWORD`          | —                                          | ✓               |
+| `CORS_ALLOWED_ORIGINS`   | `http://localhost:5173`                    |                 |
+| `DATA_INIT_ENABLED`      | `false`                                    |                 |
 
 On GCP, `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_PASSWORD`, `USER_PASSWORD` are mounted from Secret Manager at runtime.
 
@@ -144,5 +144,6 @@ postman/Quiz-API-Collection.json
 ```
 
 Test accounts (passwords from env vars):
+
 - Admin: `rex@dinoquiz.academy`
 - User: `veloci@dinoquiz.academy`
