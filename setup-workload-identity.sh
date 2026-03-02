@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# setup-workload-identity.sh — Thiết lập Workload Identity Federation
+# Thiết lập Workload Identity Federation
 #
 # Mục đích: Cho phép GitHub Actions xác thực với GCP mà KHÔNG cần service
 #           account key (JSON file). An toàn hơn nhiều vì không có secret nào

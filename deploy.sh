@@ -19,7 +19,7 @@
 set -euo pipefail  # Dừng ngay nếu có lỗi, biến chưa set cũng báo lỗi
 
 # =============================================================================
-# CẤU HÌNH — Tên resources (an toàn để commit)
+# CẤU HÌNH — Tên resources
 # =============================================================================
 PROJECT_ID="kien-terraform-playground"
 REGION="asia-southeast1"
@@ -36,8 +36,7 @@ FRONTEND_SERVICE="quiz-frontend"     # Cloud Run frontend service
 RUN_SA="quiz-run-sa"                 # Service Account cho Cloud Run
 
 # =============================================================================
-# PASSWORDS — Đọc từ .env (KHÔNG hardcode vào đây, .env không được commit)
-# Cách setup: cp .env.example .env  →  điền giá trị thật vào .env
+# PASSWORDS — Đọc từ .env
 # =============================================================================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${SCRIPT_DIR}/.env"
@@ -82,13 +81,13 @@ warn()    { echo "⚠ $*"; }
 # =============================================================================
 cmd_setup() {
   info "Bước 1: Config gcloud project"
-  # Tại sao set project? Để mọi lệnh gcloud sau không cần truyền --project
+  # Set project để mọi lệnh gcloud sau không cần truyền --project
   gcloud config set project "$PROJECT_ID"
   gcloud config set compute/region "$REGION"
   success "Project set: $PROJECT_ID | Region: $REGION"
 
   info "Bước 1b: Enable APIs"
-  # Tại sao? GCP mặc định tắt tất cả services. Phải bật tường minh những gì dùng.
+  # GCP mặc định tắt tất cả services.
   # - run.googleapis.com          → Cloud Run
   # - sqladmin.googleapis.com     → Cloud SQL
   # - redis.googleapis.com        → Memorystore Redis
