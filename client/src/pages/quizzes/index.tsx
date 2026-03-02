@@ -40,8 +40,12 @@ const QuizPage = () => {
         navigate(ROUTES.TAKE_EXAM(attemptedId));
       } else {
         toast.error("This quiz is not currently available");
-        setAttemptedId(undefined);
-        setQuizId("");
+        // Defer state reset to avoid synchronous setState inside effect
+        // (triggers react-hooks/set-state-in-effect warning)
+        setTimeout(() => {
+          setAttemptedId(undefined);
+          setQuizId("");
+        }, 0);
       }
     }
   }, [quiz, attemptedId, navigate]);

@@ -32,6 +32,9 @@ export default defineConfig([
         { argsIgnorePattern: "^_" },
       ],
       "react-hooks/exhaustive-deps": "warn",
+      // React Compiler rule flags manual memo dep mismatches as optimization hints
+      // Downgrade to warn since we're not using React Compiler in prod
+      "react-hooks/react-compiler": "warn",
     },
   },
 ]);
