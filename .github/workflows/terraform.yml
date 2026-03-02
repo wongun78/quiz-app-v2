@@ -185,9 +185,10 @@ jobs:
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
 
-    # Environment "production" → có thể set manual approval trong GitHub
-    # Settings → Environments → production → Required reviewers
-    environment: production
+    # Tip: Tạo Environment "production" trong GitHub Settings → Environments
+    # → Thêm "Required reviewers" để yêu cầu approve trước khi apply
+    # → Sau khi tạo xong, bỏ comment dòng dưới:
+    # environment: production
 
     permissions:
       contents: read
