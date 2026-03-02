@@ -32,9 +32,9 @@ export default defineConfig([
         { argsIgnorePattern: "^_" },
       ],
       "react-hooks/exhaustive-deps": "warn",
-      // React Compiler rule flags manual memo dep mismatches as optimization hints
-      // Downgrade to warn since we're not using React Compiler in prod
-      "react-hooks/react-compiler": "warn",
+      // v7 react-hooks rules that flag manual memoization mismatches as errors
+      // Downgrade to warn — these are optimizer hints, not functional bugs
+      "react-hooks/preserve-manual-memoization": "warn",
     },
   },
 ]);
