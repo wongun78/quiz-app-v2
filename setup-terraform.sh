@@ -77,10 +77,12 @@ info "Bước 3: Cấp thêm roles cho Terraform SA"
 TERRAFORM_ROLES=(
   "roles/storage.objectAdmin"           # Quản lý state bucket
   "roles/vpcaccess.admin"               # Tạo VPC Connector
-  "roles/compute.networkAdmin"          # Tạo VPC, Firewall
+  "roles/compute.networkAdmin"          # Tạo VPC, Subnet, VPC Connector
+  "roles/compute.securityAdmin"        # Tạo/cập nhật Firewall rules
   "roles/servicenetworking.networksAdmin" # Private service connection
   "roles/cloudsql.admin"               # Tạo/xóa Cloud SQL
   "roles/redis.admin"                  # Tạo/xóa Redis
+  "roles/artifactregistry.admin"       # Tạo/cập nhật Artifact Registry repo
   "roles/secretmanager.admin"          # Tạo/xóa secrets
   "roles/iam.serviceAccountAdmin"      # Tạo/xóa Service Accounts
   "roles/iam.workloadIdentityPoolAdmin" # Tạo WIF pool/provider
