@@ -179,6 +179,16 @@ jobs:
           echo "redis_host=$REDIS_HOST" >> $GITHUB_OUTPUT
           echo "DB IP: $DB_IP, Redis: $REDIS_HOST"
 
+      - name: Get Frontend URL for CORS
+        id: frontend
+        run: |
+          # Lấy frontend URL hiện tại để set CORS — fallback về localhost nếu chưa deploy
+          FRONTEND_URL=$(gcloud run services describe quiz-frontend \
+            --region="${{ env.REGION }}" \
+            --format='value(status.url)' 2>/dev/null || echo "http://localhost:5173")
+          echo "url=$FRONTEND_URL" >> $GITHUB_OUTPUT
+          echo "Frontend URL for CORS: $FRONTEND_URL"
+
       - name: Deploy to Cloud Run
         run: |
           CONNECTOR="projects/${{ env.PROJECT_ID }}/locations/${{ env.REGION }}/connectors/quiz-connector"
@@ -198,6 +208,7 @@ jobs:
             --set-env-vars="REDIS_DATABASE=0" \
             --set-env-vars="SPRING_JPA_HIBERNATE_DDL_AUTO=update" \
             --set-env-vars="DATA_INIT_ENABLED=true" \
+            --set-env-vars="CORS_ALLOWED_ORIGINS=${{ steps.frontend.outputs.url }}" \
             --set-secrets="SPRING_DATASOURCE_PASSWORD=db-password:latest" \
             --set-secrets="JWT_SECRET=jwt-secret:latest" \
             --set-secrets="ADMIN_PASSWORD=admin-password:latest" \
