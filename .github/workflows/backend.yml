@@ -22,7 +22,7 @@ on:
     branches: [main]
     paths:
       - "server/**"
-  workflow_dispatch: # Cho phép trigger thủ công từ GitHub UI
+  workflow_dispatch: # Cho phép trigger thủ công từ GitHub UI hoặc sau khi fix IAM
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
