@@ -85,6 +85,7 @@ TERRAFORM_ROLES=(
   "roles/iam.serviceAccountAdmin"      # Tạo/xóa Service Accounts
   "roles/iam.workloadIdentityPoolAdmin" # Tạo WIF pool/provider
   "roles/serviceusage.serviceUsageAdmin" # Enable/disable APIs
+  "roles/resourcemanager.projectIamAdmin" # Đọc/ghi project IAM policy (google_project_iam_member)
 )
 
 for ROLE in "${TERRAFORM_ROLES[@]}"; do
